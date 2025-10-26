@@ -1,0 +1,35 @@
+#!/bin/sh
+# Mock dig for dns_query testing
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+	case "$1" in
+	+short) shift ;;
+	@*) NS="${1#@}"; shift ;;
+	*) [ -z "$TYPE" ] && TYPE="$1" || DOMAIN="$1"; shift ;;
+	esac
+done
+
+# Return mock responses based on query
+case "$TYPE:$DOMAIN" in
+TXT:_acme-challenge*)
+	# For testing, return a value that contains common base64url patterns
+	# The sed filter in dns_query will match if the pattern appears anywhere in the output
+	# Since we can't know the exact VAL ahead of time, return the value from env if set
+	if [ -n "$MOCK_DNS_TXT" ]; then
+		echo "$MOCK_DNS_TXT"
+	else
+		# Return a string that matches the pattern "." (anything)
+		echo '"mock-acme-challenge-value"'
+	fi
+	;;
+SOA:*)
+	echo "ns1.example.com. admin.example.com. 2024010100 3600 600 86400 300"
+	;;
+A:*)
+	echo "93.184.216.34"
+	;;
+*)
+	# Empty response for unknown queries
+	;;
+esac

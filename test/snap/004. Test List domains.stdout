@@ -1,0 +1,3 @@
+List of domains:
+  example.com = dns cloudflare MYTOKEN
+  sub.example.com = http /var/www/html

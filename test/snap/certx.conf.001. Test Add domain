@@ -1,0 +1,4 @@
+_ca = https://acme-staging-v02.api.letsencrypt.org/directory
+_email = lauri@rooden.ee
+_terms = YES
+domain example.com = dns manual

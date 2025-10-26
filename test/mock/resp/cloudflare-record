@@ -1,0 +1,3 @@
+HTTP/2 200
+
+{"success":true,"result":{"id":"test-record-456","type":"TXT","name":"_acme-challenge.example.com"}}

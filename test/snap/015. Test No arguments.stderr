@@ -1,0 +1,33 @@
+
+certx.sh - v26.2.0 - Simple ACME v2 client for green certificates
+
+Commands:
+  domain <name> dns manual|cloudflare TOKEN
+  domain <name> http /webroot
+  domain <name> drop
+  domain                    (list all domains)
+  cert <name> <domains>     (set domains)
+  cert <name> order|renew
+  cert <name> key_path <paths>
+  cert <name> crt_path <paths>
+  cert <name> post_hook <cmd>
+  cert <name> drop
+  cert                      (list all certs)
+  account-rollover          (change account key)
+  account-deactivate        (deactivate account)
+  authz-deactivate <url>    (deactivate authorization)
+  ca-reset                  (delete all CA configuration)
+  renew-all [days]          (default: 15 days)
+  retry <order-file>        (retry failed order)
+  help [topic]
+
+Usage Flow:
+  1. Configure domain challenge method
+     $ ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+  2. Configure certificate with domain names
+     $ ./certx.sh cert mycert example.com,www.example.com
+  3. Order certificate
+     $ ./certx.sh cert mycert order
+
+Source Code: https://github.com/lauriro/certx.sh
+

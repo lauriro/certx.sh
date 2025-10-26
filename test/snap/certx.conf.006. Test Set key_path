@@ -1,0 +1,7 @@
+_ca = https://acme-staging-v02.api.letsencrypt.org/directory
+_email = lauri@rooden.ee
+_terms = YES
+cert mycert1 = example.com,www.example.com
+cert mycert1 key_path = /etc/ssl/mycert1.key
+domain example.com = dns cloudflare MYTOKEN
+domain sub.example.com = http /var/www/html

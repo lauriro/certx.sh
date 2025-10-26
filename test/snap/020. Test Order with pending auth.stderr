@@ -1,0 +1,5 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order pendingcert: example.com
+Creating key 'pendingcert.key'
+Downloading certificate: pendingcert.crt
+Expires: FILTERED

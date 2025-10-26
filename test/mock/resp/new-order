@@ -1,0 +1,5 @@
+HTTP/2 201
+location: https://mock.acme/order/1
+replay-nonce: mock-nonce-004
+
+{"status":"ready","authorizations":["https://mock.acme/authz/1"],"finalize":"https://mock.acme/finalize/1"}

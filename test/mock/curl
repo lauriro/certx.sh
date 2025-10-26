@@ -1,0 +1,73 @@
+#!/bin/sh
+# Mock curl for ACME testing - returns pre-recorded responses with state tracking
+
+for arg; do URL=$arg; done
+RESP=${MOCK_RESP:-$(dirname "$0")/resp}
+FILE="$RESP/${URL##*/}"
+
+# State-based responses
+case "$URL" in
+*/directory|*/new-acct|*/new-nonce|*/key-change)
+	cat "$FILE"
+	;;
+*/new-order)
+	if [ "$MOCK_TEST" = "dns" ]; then
+		cat "$RESP/new-order-dns"
+	elif [ "$MOCK_TEST" = "pending" ]; then
+		cat "$RESP/new-order-pending"
+	else
+		cat "$RESP/new-order"
+	fi
+	;;
+*/authz/*)
+	if [ "$MOCK_TEST" = "dns" ]; then
+		if [ -f "$MOCK_STATE/auth-challenged" ]; then
+			cat "$RESP/authz-dns-valid"
+		else
+			cat "$RESP/authz-dns-pending"
+		fi
+	elif [ "$MOCK_TEST" = "pending" ]; then
+		if [ -f "$MOCK_STATE/auth-challenged" ]; then
+			cat "$RESP/authz-valid"
+		else
+			cat "$RESP/authz-pending"
+		fi
+	else
+		cat "$RESP/authz"
+	fi
+	;;
+*/chall/*)
+	# Challenge validation trigger
+	touch "$MOCK_STATE/auth-challenged"
+	cat "$RESP/challenge-trigger"
+	;;
+*/finalize/*)
+	touch "$MOCK_STATE/finalized"
+	cat "$RESP/finalize"
+	;;
+*/order/*)
+	if [ -f "$MOCK_STATE/finalized" ]; then
+		cat "$RESP/order-valid"
+	else
+		cat "$RESP/order-ready"
+	fi
+	;;
+*/cert/*)
+	cat "$RESP/cert"
+	;;
+*/acct/*)
+	# Account operations (deactivate, update)
+	cat "$RESP/acct-deactivate"
+	;;
+*api.cloudflare.com*/zones\?*)
+	# Cloudflare zone lookup
+	cat "$RESP/cloudflare-zone"
+	;;
+*api.cloudflare.com*/zones/*/dns_records*)
+	# Cloudflare DNS record create/get
+	cat "$RESP/cloudflare-record"
+	;;
+*)
+	printf 'HTTP/2 404\n\n{"error":"not found"}'
+	;;
+esac

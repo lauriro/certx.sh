@@ -1,0 +1,4 @@
+HTTP/2 200
+replay-nonce: mock-nonce-008
+
+{"status":"valid","certificate":"https://mock.acme/cert/1"}

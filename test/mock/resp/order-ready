@@ -1,0 +1,4 @@
+HTTP/2 200
+replay-nonce: mock-nonce-006
+
+{"status":"ready","authorizations":["https://mock.acme/authz/1"],"finalize":"https://mock.acme/finalize/1"}

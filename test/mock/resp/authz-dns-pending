@@ -1,0 +1,4 @@
+HTTP/1.1 200 OK
+replay-nonce: mock-nonce-011
+
+{"status":"pending","identifier":{"type":"dns","value":"example.com"},"challenges":[{"type":"dns-01","status":"pending","url":"https://mock.acme/chall/dns-1","token":"mock-dns-token"}]}

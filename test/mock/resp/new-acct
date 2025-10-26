@@ -1,0 +1,5 @@
+HTTP/1.1 201 Created
+location: https://mock.acme/acct/1
+replay-nonce: mock-nonce-003
+
+{"status":"valid"}

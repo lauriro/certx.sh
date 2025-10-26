@@ -1,0 +1,12 @@
+2026-02-02 16:54:17 [495646] lauri -- Deleting cert: mycert2
+2026-02-02 16:54:17 [495672] lauri -- Deleting domain: sub.example.com
+2026-02-02 16:54:17 [495698] lauri -- Nothing to renew
+2026-02-02 16:54:17 [495732] lauri -- ERROR: Invalid command!
+2026-02-02 16:54:17 [495772] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-02 16:54:17 [495772] lauri -- Creating key '_key'
+2026-02-02 16:54:17 [495772] lauri -- Registering account
+2026-02-02 16:54:17 [495772] lauri -- Order testcert: example.com
+2026-02-02 16:54:17 [495772] lauri -- Creating key 'testcert.key'
+2026-02-02 16:54:17 [495772] lauri -- Sending CSR
+2026-02-02 16:54:17 [495772] lauri -- Downloading certificate: testcert.crt
+2026-02-02 16:54:17 [495772] lauri -- Expires: May  1 22:09:24 2026 GMT (88 days)

@@ -1,0 +1,6 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order dnscert: dns.example.com
+Creating key 'dnscert.key'
+Sending CSR
+Downloading certificate: dnscert.crt
+Expires: FILTERED
