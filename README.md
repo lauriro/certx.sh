@@ -135,20 +135,6 @@ sudo journalctl -u certx.service -f
 ./certx.sh cert mycert post_hook "systemctl reload nginx"
 ```
 
-**Change CA** - edit `certx.conf` and set `_ca`:
-```
-# Let's Encrypt
-_ca = https://acme-v02.api.letsencrypt.org/directory          # production
-_ca = https://acme-staging-v02.api.letsencrypt.org/directory  # staging
-
-# Google Trust Services (requires EAB)
-_ca = https://dv.acme-v02.api.pki.goog/directory              # production
-_ca = https://dv.acme-v02.test-api.pki.goog/directory         # test
-
-# ZeroSSL (requires EAB)
-_ca = https://acme.zerossl.com/v2/DV90                        # production
-```
-
 **Custom DNS hooks** for other providers:
 ```bash
 # Create hook script: ./dns-PROVIDER.sh
@@ -156,12 +142,6 @@ _ca = https://acme.zerossl.com/v2/DV90                        # production
 # Example: Get Cloudflare hook
 curl -JO certx.sh/dns-cloudflare.sh && chmod +x dns-cloudflare.sh
 ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
-
-# Example: Custom provider
-./certx.sh domain example.com dns myprovider YOUR-ARGS
-
-# For help on writing hooks:
-./certx.sh help dns
 ```
 
 **Retry failed orders** - if an order fails, you can retry it later:
