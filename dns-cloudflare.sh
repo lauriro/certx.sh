@@ -38,12 +38,12 @@ ZONE_ID=$(json id _res '"status"') || {
 
 # shellcheck disable=SC1003 # DNS TXT records must be quoted: "content":"\"value\""
 DATA='{"type":"TXT","name":"'"$RR"'","content":"\"'"$VAL"'\"","ttl":120}'
-api -X POST --data "$DATA" "$API/$ZONE_ID/dns_records" > _res || {
+api -X POST --data "$DATA" "$API/$ZONE_ID/dns_records" >_res || {
 	log "Failed to create TXT record, checking existing one"
-	api "$API/$ZONE_ID/dns_records?type=TXT&name=$RR&content=\"$VAL\"" > _res
+	api "$API/$ZONE_ID/dns_records?type=TXT&name=$RR&content=\"$VAL\"" >_res
 } || die "Failed to find TXT record"
 RID=$(json id _res '"type":"TXT"') || die "No id for TXT record"
 
 # Send cleanup commands to FD 3
-printf "curl -fs --retry 30 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$ZONE_ID/dns_records/$RID" >&3
+>&3 printf "curl -fs --retry 30 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$ZONE_ID/dns_records/$RID"
 
