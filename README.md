@@ -66,8 +66,8 @@ Add to cron for auto-renewal:
 ```bash
 # /etc/cron.daily/certx
 #!/bin/sh
-cd /opt/certx
-./certx.sh renew-all 30 && systemctl reload nginx
+cd /srv/certx
+./certx.sh renew-all
 ```
 
 Or use systemd timer (recommended for system-wide deployment):
@@ -153,7 +153,7 @@ _ca = https://acme.zerossl.com/v2/DV90                        # production
 # Create hook script: ./dns-PROVIDER.sh
 # Hook must output cleanup commands to stdout (send logs to stderr if needed)
 # Example: Get Cloudflare hook
-curl -JO cert.sh/dns-cloudflare.sh && chmod +x dns-cloudflare.sh
+curl -JO certx.sh/dns-cloudflare.sh && chmod +x dns-cloudflare.sh
 ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
 
 # Example: Custom provider
@@ -235,4 +235,4 @@ MIT
 
 ---
 
-https://github.com/lauriro/certx
+https://github.com/lauriro/certx.sh
