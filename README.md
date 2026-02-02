@@ -43,11 +43,11 @@ Note: Webroot directory `/.well-known/acme-challenge/` should exist and be acces
 
 ## Deployment
 
-Deploy certs to multiple locations (local or SSH):
+Deploy certs to multiple locations (local, SSH, or FTP):
 
 ```bash
 ./certx.sh cert mycert key_path /etc/ssl/private/key
-./certx.sh cert mycert crt_path /etc/ssl/certs/cert,ssh://server1/etc/ssl/cert
+./certx.sh cert mycert crt_path /etc/ssl/certs/cert,ssh://server1/etc/ssl/cert,ftp://user:pass@host/etc/ssl/cert
 
 # Happens automatically after cert order/renewal
 ```

@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.0 - Simple ACME v2 client for green certificates
+#- certx.sh - vGIT-DEV - Simple ACME v2 client for green certificates
 #
 #  Install:
 #    curl -JO certx.sh
@@ -216,6 +216,10 @@ deploy_file() {
 		ssh://*)
 			ssh "${P%%/*}" "cat > '/${P#*/}'" <"$1"
 			[ -z "$3" ] || printf 'ssh "%s" "rm %s"\n' "${P%%/*}" "'/${P#*/}'" >>_cleanup
+			;;
+		ftps?://*)
+			curl -sS -T "$1" "$TARGET"
+			[ -z "$3" ] || printf "curl -sS 'ftp://%s' -Q 'DELE /%s'\n" "${P%%/*}" "${P#*/}" >>_cleanup
 			;;
 		file://*|/*)
 			cat "$1" >"$P"
