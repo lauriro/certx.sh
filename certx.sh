@@ -8,23 +8,23 @@
 #    ./certx.sh
 #-
 #- Commands:
-#-   domain <name> dns manual|cloudflare TOKEN
-#-   domain <name> http /webroot
-#-   domain <name> drop
+#-   domain [name] dns [manual|cloudflare|..] TOKEN
+#-   domain [name] http /webroot,ssh://srv1/webroot,ftp://u:p@srv2/webroot
+#-   domain [name] drop
 #-   domain                    (list all domains)
-#-   cert <name> <domains>     (set domains)
-#-   cert <name> order|renew
-#-   cert <name> key_path <paths>
-#-   cert <name> crt_path <paths>
-#-   cert <name> post_hook <cmd>
-#-   cert <name> drop
+#-   cert [name] [domains,..]  (set domains)
+#-   cert [name] [order|renew]
+#-   cert [name] [key_path|crt_path] [paths,..]
+#-   cert [name] crt_path [paths,..]
+#-   cert [name] post_hook [cmd]
+#-   cert [name] drop
 #-   cert                      (list all certs)
 #-   account-rollover          (change account key)
 #-   account-deactivate        (deactivate account)
-#-   authz-deactivate <url>    (deactivate authorization)
+#-   authz-deactivate [url]    (deactivate authorization)
 #-   ca-reset                  (delete all CA configuration)
 #-   renew-all [days]          (default: 15 days)
-#-   retry <order-file>        (retry failed order)
+#-   retry [order-file]        (retry failed order)
 #-   help [topic]
 #-
 #- Usage Flow:
@@ -134,11 +134,11 @@ hexB64() {
 	# shellcheck disable=SC2046 # Intentionally split
 	printf %b "$(printf '\\%03o' $(sed 's/../0x& /g'))" | b64url
 }
-json() { # <key> [file] [section-matcher]
+json() { # [key] [file] [section-matcher]
 	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed 's/{/\n{/g' | sed -n "/${3-.}/p" | sed -n 's/.*"'"$1"'":\("[^"]\{1,\}"\|\[[^]]\{1,\}\]\|[[:alnum:]]*\).*/\1/p' | sed 's/","/\n/g;s/[]["]//g')
 	[ -n "$_VAL" ] && printf '%s\n' "$_VAL"
 }
-sign() { # <URL> <PAYLOAD> [JWK] [KEY]
+sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 	PROT=$(printf '{"alg":"ES256",%s,"url":"%s"}' "${3:-"$KID"}$5" "$1" | b64url)
 	DATA=$(printf %s "$2" | b64url)
 	# shellcheck disable=SC2046 # Intentionally split
@@ -166,7 +166,6 @@ expand_key() {
 }
 jwk() {
 	openssl ec -in "$1" -pubout -outform DER 2>/dev/null >_pub
-	# DER public key: 30 [total-len] 30 [id-len] 06 [oid-len] <OID> 06 [curve-len] <curve> 03 [xy-len] 00 04 <x> <y>
 	printf '{"crv":"P-256","kty":"EC","x":"%s","y":"%s"}' "$(tail -c64 _pub | head -c32 | b64url)" "$(tail -c32 _pub | b64url)"
 }
 get_kid() {
@@ -291,7 +290,7 @@ challenge() {
 	req "$(json url _auth '"type":"'"$1"'-01"')" "{}" >_res || die "Validation Trigger Fail"
 }
 
-# Usage: order <cert-name>
+# Usage: order [cert-name] [retry-file]
 order() {
 	get_kid
 
