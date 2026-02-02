@@ -62,10 +62,11 @@ Deploy certs to multiple locations (local, SSH, or FTP):
 
 Note: `renew-all` only works for certificates that have been successfully ordered at least once manually using `cert <name> order`.
 
-Add to cron for auto-renewal:
+Add to cron for auto-renewal, rely on cron's built-in MAILTO for failure notification:
 ```bash
 # /etc/cron.daily/certx
 #!/bin/sh
+MAILTO=admin@example.com
 cd /srv/certx
 ./certx.sh renew-all
 ```
