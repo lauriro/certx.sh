@@ -75,7 +75,7 @@
 #domain-   ./certx.sh domain example.com dns cloudflare YOUR-TOKEN
 #domain-
 
-: "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./${0%.*}-$(date +%Y-%m-%d).log"}"
+: "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
 
 umask 077
 export LC_ALL=C CERTX_CONF CERTX_LOG
