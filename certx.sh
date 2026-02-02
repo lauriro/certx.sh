@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - vGIT-DEV - Simple ACME v2 client for green certificates
+#- certx.sh - v26.2.1 - Simple ACME v2 client for green certificates
 #
 #  Install:
 #    curl -JO certx.sh
@@ -251,7 +251,7 @@ wait_dns() {
 get_domain() {
 	NAME=$1
 	while ! conf_has "domain $NAME"; do
-		[ "$NAME" = "${NAME#*.}" ] && die "No domain config for '$NAME'" domain
+		[ "$NAME" = "${NAME#*.}" ] && die "No domain config for '$1'" domain
 		NAME=${NAME#*.}
 	done
 	printf '%s\n' "$NAME"
@@ -393,6 +393,7 @@ ca-reset.)
 	conf_set "_" '' '[^=]*'
 	;;
 cert.?*|domain.dns|domain.http)
+	[ "$1" != cert ] || (IFS=,;for N in $3; do get_domain "$N"; done >/dev/null)
 	K="$1 $2"
 	shift 2
 	conf_set "$K" "$*"
