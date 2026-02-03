@@ -250,8 +250,8 @@ wait_dns() {
 }
 get_domain() {
 	NAME=$1
-	while ! conf_has "domain $NAME"; do
-		[ "$NAME" = "${NAME#*.}" ] && die "No domain config for '$1'" domain
+	TYPE=$2 && conf_has "ip $1" && TYPE=$3 || while ! conf_has "domain $NAME"; do
+		[ "$NAME" = "${NAME#*.}" ] && die "No domain/ip config for '$1'" domain
 		NAME=${NAME#*.}
 	done
 	printf '%s\n' "$NAME"
@@ -263,7 +263,7 @@ challenge() {
 	DOMAIN=$(get_domain "$NAME")
 	log "Authorization $NAME: $1"
 	# shellcheck disable=SC2046 # Intentionally split into positional params
-	set -- $(conf_get "domain $DOMAIN")
+	set -- $(conf_get "domain $DOMAIN" || conf_get "ip $DOMAIN")
 	TOK=$(json token _auth '"type":"'"$1"'-01"')
 	THUMB=$(conf_get _thumb)
 	VAL=$(shaB64 "$TOK.$THUMB")
@@ -297,12 +297,11 @@ order() {
 	FILE=$1
 	BACKUP=$2
 	# shellcheck disable=SC2046 # Intentionally split
-	set -- $(conf_get "cert $FILE" | tr ',' ' ')
-	[ $# -gt 0 ] || die "No names configured: $FILE" cert
+	set -- $(conf_get "cert $FILE")
+	[ -n "$1" ] || die "No names configured: $FILE" cert
 	log "Order $FILE: $*"
-	for NAME; do get_domain "$NAME"; done >/dev/null
+	NAMES=$(IFS=,;for N in $1;do get_domain "$N" dns ip >/dev/null && printf '{"type":"%s","value":"%s"},' "$TYPE" "$N"; done)
 
-	NAMES=$(printf '{"type":"dns","value":"%s"},' "$@")
 	[ -z "$BACKUP" ] && {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
 		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']}' >_order || die 'Creating order failed'
@@ -325,7 +324,8 @@ order() {
 			;;
 		ready)
 			log "Sending CSR"
-			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=$(printf 'DNS:%s,' "$@" | sed 's/,$//')" -outform DER | b64url)
+			ALT=$(IFS=,;for N in $1;do get_domain "$N" DNS IP >/dev/null && printf '%s:%s,' "$TYPE" "$N"; done)
+			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=${ALT%,}" -outform DER | b64url)
 			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die 'CSR failed'
 			;;
 		valid)
@@ -392,14 +392,14 @@ ca-reset.)
 	log "Deleting all CA configuration"
 	conf_set "_" '' '[^=]*'
 	;;
-cert.?*|domain.dns|domain.http)
+cert.?*|domain.dns|domain.http|ip.http)
 	[ "$1" != cert ] || (IFS=,;for N in $3; do get_domain "$N"; done >/dev/null)
 	K="$1 $2"
 	shift 2
 	conf_set "$K" "$*"
 	[ "$1" != dns ] || [ "$2" = manual ] || [ -x "./dns-${2}.sh" ] || die "No executable DNS validation hook!" dns
 	;;
-cert.|domain.)
+cert.|domain.|ip.)
 	printf 'List of %ss:\n' "$1"
 	conf_find "$1"
 	;;

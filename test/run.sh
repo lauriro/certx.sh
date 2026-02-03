@@ -30,6 +30,11 @@ Check "certx.conf"
 
 Test "List domains" domain
 
+Test "Add ip" ip 203.0.113.1 http /var/www/html
+Check "certx.conf"
+
+Test "List ips" ip
+
 Test "Add cert" cert mycert1 example.com,www.example.com
 Check "certx.conf"
 
