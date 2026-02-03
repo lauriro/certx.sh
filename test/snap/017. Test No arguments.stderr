@@ -1,0 +1,30 @@
+
+certx.sh - v26.2.2 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+
+Commands:
+  domain                                     - list configured domains
+  domain [name] [dns|http] [opts]..          - configure domain validation
+  domain [name] drop                         - remove domain configuration
+  ip                                         - list configured IPs
+  ip [addr] http [opts]..                    - configure IP validation
+  ip [addr] drop                             - remove IP configuration
+  cert                                       - list created certificates
+  cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
+  cert [name] [key_path|crt_path] [paths,..]
+  cert [name] post_hook [cmd]                - commands to run after cert deployment
+  cert [name] order                          - order and deploy named cert
+  cert [name] drop                           - remove cert configuration
+  account-rollover                           - change account key
+  account-deactivate                         - deactivate account
+  authz-deactivate [url]                     - deactivate authorization
+  ca-reset                                   - delete all CA/account configuration
+  renew-all [days]                           - (default: 15 days)
+  retry [order-file]                         - retry failed order
+  help [topic]
+
+Examples:
+  ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+  ./certx.sh cert mycert 'example.com,*.example.com'
+  ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
+  ./certx.sh cert mycert order
+

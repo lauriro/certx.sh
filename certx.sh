@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.1 - Simple ACME v2 client for green certificates
+#- certx.sh - v26.2.2 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -8,34 +8,31 @@
 #    ./certx.sh
 #-
 #- Commands:
-#-   domain [name] dns [manual|cloudflare|..] TOKEN
-#-   domain [name] http /webroot,ssh://srv1/webroot,ftp://u:p@srv2/webroot
-#-   domain [name] drop
-#-   domain                    (list all domains)
-#-   cert [name] [domains,..]  (set domains)
-#-   cert [name] [order|renew]
+#-   domain                                     - list configured domains
+#-   domain [name] [dns|http] [opts]..          - configure domain validation
+#-   domain [name] drop                         - remove domain configuration
+#-   ip                                         - list configured IPs
+#-   ip [addr] http [opts]..                    - configure IP validation
+#-   ip [addr] drop                             - remove IP configuration
+#-   cert                                       - list created certificates
+#-   cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
 #-   cert [name] [key_path|crt_path] [paths,..]
-#-   cert [name] crt_path [paths,..]
-#-   cert [name] post_hook [cmd]
-#-   cert [name] drop
-#-   cert                      (list all certs)
-#-   account-rollover          (change account key)
-#-   account-deactivate        (deactivate account)
-#-   authz-deactivate [url]    (deactivate authorization)
-#-   ca-reset                  (delete all CA configuration)
-#-   renew-all [days]          (default: 15 days)
-#-   retry [order-file]        (retry failed order)
+#-   cert [name] post_hook [cmd]                - commands to run after cert deployment
+#-   cert [name] order                          - order and deploy named cert
+#-   cert [name] drop                           - remove cert configuration
+#-   account-rollover                           - change account key
+#-   account-deactivate                         - deactivate account
+#-   authz-deactivate [url]                     - deactivate authorization
+#-   ca-reset                                   - delete all CA/account configuration
+#-   renew-all [days]                           - (default: 15 days)
+#-   retry [order-file]                         - retry failed order
 #-   help [topic]
 #-
-#- Usage Flow:
-#-   1. Configure domain challenge method
-#-      $ ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
-#-   2. Configure certificate with domain names
-#-      $ ./certx.sh cert mycert example.com,www.example.com
-#-   3. Order certificate
-#-      $ ./certx.sh cert mycert order
-#-
-#- Source Code: https://github.com/lauriro/certx.sh
+#- Examples:
+#-   ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+#-   ./certx.sh cert mycert 'example.com,*.example.com'
+#-   ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
+#-   ./certx.sh cert mycert order
 #-
 #ca-
 #ca- CA Directory URLs:
@@ -49,36 +46,29 @@
 #dns- Automated DNS validation requires executable script: ./dns-PROVIDER.sh
 #dns- Script adds TXT record and outputs cleanup commands to stdout.
 #dns-
-#dns- Some hooks can be downloaded, see: https://github.com/lauriro/certx.sh
-#dns-   curl -O certx.sh/dns-cloudflare.sh && chmod +x dns-cloudflare.sh
-#dns-   ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+#dns- Available providers: cloudflare, digitalocean, linode, zone.eu
+#dns-   curl -O certx.sh/dns-PROVIDER.sh && chmod +x dns-PROVIDER.sh
 #dns-
 #eab-
-#eab- Request External Account Binding (EAB)
-#eab-
-#eab- For Google, open cloud shell in web https://console.cloud.google.com/welcome?cloudshell=true
-#eab- and run 'gcloud publicca external-account-keys create'.
-#eab- On failure read the guide: https://cloud.google.com/certificate-manager/docs/public-ca-tutorial
-#eab-
-#eab- For ZeroSSL run: curl --data 'email=your@email.com' https://api.zerossl.com/acme/eab-credentials-email
+#eab- Request External Account Binding (EAB) credentials:
+#eab-    Google: gcloud publicca external-account-keys create
+#eab       - run locally or in cloud shell web https://console.cloud.google.com/welcome?cloudshell=true
+#eab-    ZeroSSL: curl --data 'email=your@email.com' https://api.zerossl.com/acme/eab-credentials-email
 #eab-
 #domain-
-#domain- Configure domain validation before ordering certificates.
+#domain- Configure domain/ip validation before ordering certificates.
 #domain-
-#domain- Methods:
-#domain-   dns manual              - Interactive (you add TXT record)
-#domain-   dns cloudflare TOKEN    - Automated via Cloudflare API
-#domain-   http /webroot           - HTTP challenge (creates file in webroot)
-#domain-                             Note: /.well-known/acme-challenge/ must exist
-#domain-
-#domain- Example:
-#domain-   ./certx.sh domain example.com dns cloudflare YOUR-TOKEN
+#domain- Examples:
+#domain-   ./certx.sh domain example.com dns manual                  # Interactive (you add TXT record)
+#domain-   ./certx.sh domain example.com dns cloudflare TOKEN        # Automated via ./dns-cloudflare.sh script
+#domain-   ./certx.sh domain example.com http /www                   # Creates HTTP challenge file to /www/.well-known/acme-challenge/
+#domain-   ./certx.sh ip 203.0.113.1 http ssh://203.0.113.1/www      # IP identifiers only support http-01 validation
 #domain-
 
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.1' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.2' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 

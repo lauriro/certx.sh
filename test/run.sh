@@ -76,11 +76,10 @@ Check "certx.log" ".config" "$STRIP_TIMESTAMP_AND_PID"
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
 		-keyout /dev/null -out "$BIN/test/mock/resp/mock-cert.pem" -days 90 -nodes \
 		-subj '/CN=example.com' 2>/dev/null
+	# Build cert response (headers + PEM body)
+	printf 'HTTP/2 200\nreplay-nonce: mock-nonce-009\n\n' > "$BIN/test/mock/resp/cert"
+	cat "$BIN/test/mock/resp/mock-cert.pem" >> "$BIN/test/mock/resp/cert"
 }
-
-# Build cert response (headers + PEM body)
-printf 'HTTP/2 200\nreplay-nonce: mock-nonce-009\n\n' > "$BIN/test/mock/resp/cert"
-cat "$BIN/test/mock/resp/mock-cert.pem" >> "$BIN/test/mock/resp/cert"
 
 # Set up mock environment
 export MOCK_STATE="$TMP"

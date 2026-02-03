@@ -1,17 +1,17 @@
-2026-02-02 22:53:30 [528237] lauri -- Deleting cert: mycert2
-2026-02-02 22:53:30 [528263] lauri -- Deleting domain: sub.example.com
-2026-02-02 22:53:30 [528290] lauri -- Nothing to renew
-2026-02-02 22:53:30 [528324] lauri -- ERROR: Invalid command!
-2026-02-02 22:53:30 [528370] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-02 22:53:30 [528370] lauri -- Creating key '_key'
-2026-02-02 22:53:30 [528370] lauri -- Registering account
-2026-02-02 22:53:30 [528370] lauri -- Order testcert: example.com
-2026-02-02 22:53:30 [528370] lauri -- Creating key 'testcert.key'
-2026-02-02 22:53:31 [528370] lauri -- Sending CSR
-2026-02-02 22:53:31 [528370] lauri -- Downloading certificate: testcert.crt
-2026-02-02 22:53:31 [528370] lauri -- Expires: May  1 22:09:24 2026 GMT (88 days)
-2026-02-02 22:53:31 [528878] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-02 22:53:31 [528878] lauri -- Order pendingcert: example.com
-2026-02-02 22:53:31 [528878] lauri -- Creating key 'pendingcert.key'
-2026-02-02 22:53:31 [528878] lauri -- Downloading certificate: pendingcert.crt
-2026-02-02 22:53:31 [528878] lauri -- Expires: May  1 22:09:24 2026 GMT (88 days)
+2026-02-03 22:20:23 [749207] lauri -- Deleting cert: mycert2
+2026-02-03 22:20:23 [749234] lauri -- Deleting domain: sub.example.com
+2026-02-03 22:20:23 [749261] lauri -- Nothing to renew
+2026-02-03 22:20:23 [749297] lauri -- ERROR: Invalid command!
+2026-02-03 22:20:23 [749349] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-03 22:20:23 [749349] lauri -- Creating key '_key'
+2026-02-03 22:20:23 [749349] lauri -- Registering account
+2026-02-03 22:20:24 [749349] lauri -- Order testcert: example.com
+2026-02-03 22:20:24 [749349] lauri -- Creating key 'testcert.key'
+2026-02-03 22:20:24 [749349] lauri -- Sending CSR
+2026-02-03 22:20:24 [749349] lauri -- Downloading certificate: testcert.crt
+2026-02-03 22:20:24 [749349] lauri -- Expires: May  1 22:09:24 2026 GMT (87 days)
+2026-02-03 22:20:24 [749918] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-03 22:20:24 [749918] lauri -- Order pendingcert: example.com
+2026-02-03 22:20:24 [749918] lauri -- Creating key 'pendingcert.key'
+2026-02-03 22:20:24 [749918] lauri -- Downloading certificate: pendingcert.crt
+2026-02-03 22:20:24 [749918] lauri -- Expires: May  1 22:09:24 2026 GMT (87 days)
