@@ -78,7 +78,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
 
 umask 077
-export LC_ALL=C CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.1' CERTX_CONF CERTX_LOG
 KID='' NL='
 '
 
@@ -150,7 +150,7 @@ req() {
 		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce'
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
-	RES=$(curl -si --retry 30 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
+	RES=$(curl -si -A "$UA" --retry 30 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
 	CODE=$(printf %s "${RES#* }500" | head -n1)
 	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES"
