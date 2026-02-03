@@ -79,7 +79,7 @@
 
 umask 077
 export LC_ALL=C UA='certx.sh/26.2.1' CERTX_CONF CERTX_LOG
-KID='' NL='
+NOW=$(date +%s) ARI='' KID='' NL='
 '
 
 usage() {
@@ -112,7 +112,7 @@ conf_set() {
 	printf '%s\n' "${2:+"$1 = $2"}" "$REST" | sort | sed '/^$/d' >"$CERTX_CONF"
 }
 conf_find() {
-	_conf "$1" '!b;s,,  \1 = ,p' " \([^ ]*\) $2"
+	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
 }
 conf_ask() {
 	conf_has "$1" || {
@@ -169,7 +169,7 @@ jwk() {
 	printf '{"crv":"P-256","kty":"EC","x":"%s","y":"%s"}' "$(tail -c64 _pub | head -c32 | b64url)" "$(tail -c32 _pub | b64url)"
 }
 get_kid() {
-	[ -n "$KID" ] && return
+	[ -z "$KID" ] || return
 	log "CA: $CA"
 	req "$CA" >_dir || die "Cannot get CA directory '$CA'"
 	conf_ask _terms "CA Terms of Service: $(json termsOfService)\nAccept? (type YES)"
@@ -194,6 +194,7 @@ get_kid() {
 		req "$(json newAccount)" '{"termsOfServiceAgreed":true'"${EMAIL}${EAB}}" '"jwk":'"$JWK" >_res || die 'Registration failed'
 		conf_set _kid "$(sed -n 's/^location: *//pi' _res)"
 	}
+	ARI=$(json renewalInfo ||:)
 	KID='"kid":"'$(conf_get _kid)'"'
 }
 cleanup() {
@@ -202,9 +203,10 @@ cleanup() {
 	sh _cleanup || log "Warning: Cleanup failed"
 	:>_cleanup
 }
-days() {
-	TS=$(date -d "$1" +%s 2>/dev/null || date -j -f "%b %d %T %Y %Z" "$1" +%s 2>/dev/null)
-	printf '%s\n' "$(((TS-$(date +%s))/86400))"
+age() {
+	TS=$1
+	[ "$1" -gt 0 ] 2>/dev/null || TS=$(date -d"$1" +%s || date -jf'%b %d %T %Y %Z' "$1" +%s || date -jf'%Y-%m-%dT%H:%M:%SZ' "$1" +%s) 2>/dev/null
+	printf '%s\n' "$(((TS-${2:-0})/${3:-1}))"
 }
 deploy_file() {
 	for TARGET in $2; do
@@ -304,7 +306,8 @@ order() {
 
 	[ -z "$BACKUP" ] && {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
-		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']}' >_order || die 'Creating order failed'
+		ID=$(conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
+		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed'
 		cp _order "$BACKUP"
 	}
 	ORDER_URL=$(sed -n 's/^location: *//pi' _order)
@@ -333,8 +336,11 @@ order() {
 			req "$(json certificate _order)" >_res || die 'Certificate download failed'
 			sed '1,/^$/d' _res >"$FILE.crt"
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
-			log "Expires: $EXP ($(days "$EXP") days)"
+			log "Expires: $EXP ($(age "$EXP" "$NOW" 86400) days)"
 			conf_set "cert $FILE end" "$EXP"
+
+			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
+			[ -z "$AKI" ] || conf_set "cert $FILE ari" "$AKI.$(openssl x509 -noout -serial -in "$FILE.crt" | cut -d= -f2 | hexB64)"
 
 			# Deploy if configured
 			for EXT in key crt; do
@@ -401,7 +407,7 @@ cert.?*|domain.dns|domain.http|ip.http)
 	;;
 cert.|domain.|ip.)
 	printf 'List of %ss:\n' "$1"
-	conf_find "$1"
+	conf_find "$1" "" "  "
 	;;
 account-rollover.)
 	conf_has _kid || die "No account to rollover"
@@ -437,8 +443,13 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	DUE=${2:-15}
-	RENEW=$(IFS=$NL;for C in $(conf_find cert end);do [ -z "$C" ] || [ "$(days "${C##*= }")" -gt "$DUE" ] || printf %s "${C%% =*}"; done)
+	DUE=$((${2:-15}*86400))
+	RENEW=$(IFS=$NL;for C in $(conf_find cert end); do [ -z "$C" ] || {
+		NAME=${C%% =*} END=${C##*= } THR=$DUE
+		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && req "$ARI/$ID" >_res 2>/dev/null && \
+			END=$(json start _res) && THR=0
+		[ "$(age "$END" "$NOW")" -gt "$THR" ] || printf ' %s' "$NAME"
+	};done)
 	[ -z "$RENEW" ] && { log "Nothing to renew"; exit 0; }
 	log "Renewing: $RENEW"
 	for CERT in $RENEW; do
