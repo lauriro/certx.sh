@@ -153,7 +153,7 @@ req() {
 	RES=$(curl -si -A "$UA" --retry 30 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
 	CODE=$(printf %s "${RES#* }500" | head -n1)
-	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES"
+	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || printf '%s\n' "$RES" >&2
 }
 create_key() {
 	log "Creating key '$2'"
@@ -295,7 +295,6 @@ challenge() {
 # Usage: order [cert-name] [retry-file]
 order() {
 	get_kid
-
 	FILE=$1
 	BACKUP=$2
 	# shellcheck disable=SC2046 # Intentionally split
@@ -418,7 +417,7 @@ account-rollover.)
 	JWK=$(jwk _newkey)
 	URL=$(json keyChange) || die "No keyChange url"
 
-	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)" || die 'Key rollover failed'
+	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)">_res || die 'Key rollover failed'
 
 	conf_set _key "$(conf_get _newkey)"
 	conf_set _jwk "$JWK"
@@ -431,7 +430,7 @@ account-deactivate.)
 	conf_has _kid || die "No account to deactivate"
 	log "Deactivating account"
 	get_kid
-	req "$(conf_get _kid)" '{"status":"deactivated"}' || die 'Account deactivation failed'
+	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed'
 	conf_set "_" '' '\(kid\|key\|jwk\|thumb\)'
 	log "Account deactivated successfully"
 	;;
