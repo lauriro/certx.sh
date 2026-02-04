@@ -143,7 +143,7 @@ req() {
 	RES=$(curl -si -A "$UA" --retry 30 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
 	CODE=$(printf %s "${RES#* }500" | head -n1)
-	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || printf '%s\n' "$RES" >&2
+	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || { printf '%s\n' "$RES" >&2; false; }
 }
 create_key() {
 	log "Creating key '$2'"
@@ -228,12 +228,12 @@ dns_query() {
 	fi 2>/dev/null | sed -n "/${4:-.}/p"
 }
 wait_dns() {
-	log "Waiting for DNS propagation $2"
 	has dig || has host || {
 		log "WARNING: dig/host not found, sleeping 120s without verification"
 		sleep 120
 		return 0
 	}
+	log "Waiting for DNS propagation $2"
 	SOA=$(dns_query SOA "$1")
 	for i in $(seq 1 150); do
 		[ -n "$(dns_query TXT "$2" "$SOA" "$3")" ] && { log "  OK ($((i*2))s)"; return 0; }
@@ -295,7 +295,7 @@ order() {
 
 	[ -z "$BACKUP" ] && {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
-		ID=$(conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
+		ID=$(conf_has "cert $FILE ari_replace" && conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
 		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed'
 		cp _order "$BACKUP"
 	}
@@ -327,8 +327,12 @@ order() {
 			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
 			conf_set "cert $FILE end" "$EXP"
 
+			conf_set "cert $FILE ari" '' '[^=]*'
 			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
-			[ -z "$AKI" ] || conf_set "cert $FILE ari" "$AKI.$(openssl x509 -noout -serial -in "$FILE.crt" | cut -d= -f2 | hexB64)"
+			[ -z "$AKI" ] || {
+				conf_set "cert $FILE ari_replace" 1
+				conf_set "cert $FILE ari" "$AKI.$(openssl x509 -noout -serial -in "$FILE.crt" | cut -d= -f2 | hexB64)"
+			}
 
 			# Deploy if configured
 			for EXT in key crt; do
@@ -431,13 +435,19 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	DUE=$((${2:-15}*86400))
-	RENEW=$(IFS=$NL;for C in $(conf_find cert end); do [ -z "$C" ] || {
-		NAME=${C%% =*} END=${C##*= } THR=$DUE
-		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && req "$ARI/$ID" >_res 2>/dev/null && \
-			END=$(json start _res) && THR=0
-		[ "$(age "$END" "$NOW")" -gt "$THR" ] || printf ' %s' "$NAME"
-	};done)
+	RENEW=$(IFS=$NL; for C in $(conf_find cert end); do
+		DUE=$((${2:-15}*86400)) END=${C##*= } NAME=${C%% =*}
+		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && {
+			DUE=0 RA=$(conf_get "cert $NAME ari_retry")
+			[ "${RA:-$NOW}" -le "$NOW" ] && {
+				# Drop ari_replaces on req failure so next req is without "replaces":CERT_ID (that may be out of sync with CA)
+				req "$ARI/$ID" >_res || conf_set "cert $NAME ari_replace" ''
+				RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
+				END=$(json start _res || conf_get "cert $NAME ari_start") && conf_set "cert $NAME ari_start" "$END"
+			}
+		}
+		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME"
+	done 2>/dev/null)
 	[ -z "$RENEW" ] && { log "Nothing to renew"; exit 0; }
 	log "Renewing: $RENEW"
 	for CERT in $RENEW; do
