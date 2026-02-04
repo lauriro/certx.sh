@@ -193,10 +193,10 @@ cleanup() {
 	sh _cleanup || log "Warning: Cleanup failed"
 	:>_cleanup
 }
-age() {
-	TS=$1
-	[ "$1" -gt 0 ] 2>/dev/null || TS=$(date -d"$1" +%s || date -jf'%b %d %T %Y %Z' "$1" +%s || date -jf'%Y-%m-%dT%H:%M:%SZ' "$1" +%s) 2>/dev/null
-	printf '%s\n' "$(((TS-${2:-0})/${3:-1}))"
+seconds_to() {
+	T=$1 && [ -n "$T" ] && {
+		[ "$T" -gt 0 ] || T=$(($(date -d"$T" +%s || date -jf'%b %d %T %Y %Z' "$T" +%s || date -jf'%Y-%m-%dT%H:%M:%SZ' "$T" +%s)-NOW))
+	} 2>/dev/null && printf '%s\n' "$T"
 }
 deploy_file() {
 	for TARGET in $2; do
@@ -310,8 +310,7 @@ order() {
 	while req "$ORDER_URL" >_order; do
 		case "$(json status _order)" in
 		pending|processing)
-			SLEEP=$(sed -n 's/retry-after: *//pi' _order)
-			[ -z "$SLEEP" ] || [ "$SLEEP" -gt 0 ] || SLEEP=2
+			SLEEP=$(seconds_to "$(sed -n 's/retry-after: *//pi' _order)")
 			sleep "${SLEEP:-2}"
 			;;
 		ready)
@@ -325,7 +324,7 @@ order() {
 			req "$(json certificate _order)" >_res || die 'Certificate download failed'
 			sed '1,/^$/d' _res >"$FILE.crt"
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
-			log "Expires: $EXP ($(age "$EXP" "$NOW" 86400) days)"
+			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
 			conf_set "cert $FILE end" "$EXP"
 
 			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
