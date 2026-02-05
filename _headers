@@ -8,11 +8,3 @@
   Referrer-Policy: origin
   Content-Disposition: inline; filename="certx.sh"
 
-/*.js
-  Cache-Control: public, max-age=604800, immutable
-  ! X-Content-Type-Options
-
-/*.css
-  Cache-Control: public, max-age=604800, immutable
-  ! X-Content-Type-Options
-
