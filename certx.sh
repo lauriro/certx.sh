@@ -24,7 +24,7 @@
 #-   account-deactivate                         - deactivate account
 #-   authz-deactivate [url]                     - deactivate authorization
 #-   ca-reset                                   - delete all CA/account configuration
-#-   renew-all [days]                           - (default: 15 days)
+#-   renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
 #-   retry [order-file]                         - retry failed order
 #-   help [topic]
 #-
@@ -442,11 +442,12 @@ renew-all.)
 	RENEW=$(IFS=$NL; for C in $(conf_find cert end); do
 		DUE=$((${2:-15}*86400)) END=${C##*= } NAME=${C%% =*}
 		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
-			RA=$(conf_get "cert $NAME ari_retry") ||:
-			# When stored ARI start exists and has passed - renew
-			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || [ "${RA:-$NOW}" -le "$NOW" ] && {
-				req "$ARI/$ID" >_res && END=$(json start _res) && conf_set "cert $NAME ari_start" "$END"
-				RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
+			# Stored ARI start reached - renew
+			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || {
+				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
+					req "$ARI/$ID" >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && END=$START
+					RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
+				}
 			}
 		}
 		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME" ||:
