@@ -386,7 +386,7 @@ cert.end|cert.key|cert.key_path|cert.crt_path|cert.post_hook)
 	shift 3
 	conf_set "$K" "$*"
 	;;
-domain.drop|cert.drop)
+domain.drop|cert.drop|ip.drop)
 	log "Deleting $1: $2"
 	conf_set "$1 $2" '' '[^=]*'
 	;;

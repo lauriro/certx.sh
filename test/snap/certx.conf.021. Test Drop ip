@@ -6,4 +6,3 @@ cert mycert1 crt_path = /etc/ssl/mycert1.crt
 cert mycert1 key_path = /etc/ssl/mycert1.key
 cert mycert1 post_hook = systemctl reload nginx
 domain example.com = dns cloudflare MYTOKEN
-ip 203.0.113.1 = http /var/www/html

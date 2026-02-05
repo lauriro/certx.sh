@@ -18,7 +18,7 @@ Commands:
   account-deactivate                         - deactivate account
   authz-deactivate [url]                     - deactivate authorization
   ca-reset                                   - delete all CA/account configuration
-  renew-all [days]                           - (default: 15 days)
+  renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
   retry [order-file]                         - retry failed order
   help [topic]
 
