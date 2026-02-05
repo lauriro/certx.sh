@@ -64,6 +64,9 @@
 #domain-   ./certx.sh domain example.com http /www                   # Creates HTTP challenge file to /www/.well-known/acme-challenge/
 #domain-   ./certx.sh ip 203.0.113.1 http ssh://203.0.113.1/www      # IP identifiers only support http-01 validation
 #domain-
+#order-
+#order- In case of error "Could not validate ARI 'replaces' field" - try second time again, ARI is used once.
+#order-
 
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
 
@@ -169,7 +172,7 @@ get_kid() {
 		JWK=$(jwk _key)
 		conf_set _jwk "$JWK"
 		conf_set _thumb "$(shaB64 "$JWK")"
-		EMAIL=$(conf_get _email) && EMAIL=',"contact":["mailto:'"$EMAIL"'"]'
+		EMAIL=$(conf_get _email) && EMAIL=',"contact":["mailto:'"$EMAIL"'"]' ||:
 		EAB=''
 		[ "$(json externalAccountRequired)" = "true" ] && {
 			log 'External Account Binding required!' eab
@@ -297,7 +300,8 @@ order() {
 	[ -z "$BACKUP" ] && {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
 		ID=$(conf_has "cert $FILE ari_replace" && conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
-		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed'
+		conf_set "cert $FILE ari" '' '[^=]*'
+		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed' order
 		cp _order "$BACKUP"
 	}
 	ORDER_URL=$(sed -n 's/^location: *//pi' _order)
@@ -328,7 +332,6 @@ order() {
 			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
 			conf_set "cert $FILE end" "$EXP"
 
-			conf_set "cert $FILE ari" '' '[^=]*'
 			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
 			[ -z "$AKI" ] || {
 				conf_set "cert $FILE ari_replace" 1
@@ -425,8 +428,8 @@ account-deactivate.)
 	log 'Deactivating account'
 	get_kid
 	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed'
-	conf_set "_" '' '\(kid\|key\|jwk\|thumb\)'
-	log "Account deactivated successfully"
+	conf_set '_' '' '\(kid\|key\|jwk\|thumb\)'
+	log 'Account deactivated successfully'
 	;;
 authz-deactivate.)
 	[ -z "$2" ] && die 'Authorization URL required'
@@ -440,11 +443,10 @@ renew-all.)
 		DUE=$((${2:-15}*86400)) END=${C##*= } NAME=${C%% =*}
 		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
 			RA=$(conf_get "cert $NAME ari_retry") ||:
-			[ "${RA:-$NOW}" -le "$NOW" ] && {
-				# Drop ari_replaces on req failure so next req is without "replaces":CERT_ID (that may be out of sync with CA)
-				req "$ARI/$ID" >_res || conf_set "cert $NAME ari_replace" ''
+			# When stored ARI start exists and has passed - renew
+			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || [ "${RA:-$NOW}" -le "$NOW" ] && {
+				req "$ARI/$ID" >_res && END=$(json start _res) && conf_set "cert $NAME ari_start" "$END"
 				RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
-				END=$(json start _res || conf_get "cert $NAME ari_start") && conf_set "cert $NAME ari_start" "$END"
 			}
 		}
 		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME" ||:
