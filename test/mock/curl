@@ -55,6 +55,9 @@ case "$URL" in
 */cert/*)
 	cat "$RESP/cert"
 	;;
+*/revoke-cert)
+	cat "$RESP/revoke-cert"
+	;;
 */acct/*)
 	# Account operations (deactivate, update)
 	cat "$RESP/acct-deactivate"

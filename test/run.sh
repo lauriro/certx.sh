@@ -113,6 +113,8 @@ Test "Add cert for order" cert testcert example.com
 
 Test "Order cert" cert testcert order
 
+Test "Revoke cert" cert testcert revoke 0
+
 # Filter random keys from config (keys vary per run, dates are deterministic via mock date)
 FILTER_CONF='/^_key =/d;/^_jwk/d;/^_thumb/d;/cert .* key =/d'
 Check "certx.conf" ".order" "$FILTER_CONF"

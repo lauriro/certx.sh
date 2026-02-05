@@ -1,4 +1,4 @@
 HTTP/1.1 200 OK
 replay-nonce: mock-nonce-001
 
-{"newNonce":"https://mock.acme/new-nonce","newAccount":"https://mock.acme/new-acct","newOrder":"https://mock.acme/new-order","keyChange":"https://mock.acme/key-change","termsOfService":"https://mock.acme/terms"}
+{"newNonce":"https://mock.acme/new-nonce","newAccount":"https://mock.acme/new-acct","newOrder":"https://mock.acme/new-order","revokeCert":"https://mock.acme/revoke-cert","keyChange":"https://mock.acme/key-change","termsOfService":"https://mock.acme/terms"}

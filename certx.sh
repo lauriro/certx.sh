@@ -19,6 +19,7 @@
 #-   cert [name] [key_path|crt_path] [paths,..]
 #-   cert [name] post_hook [cmd]                - commands to run after cert deployment
 #-   cert [name] order                          - order and deploy named cert
+#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10)
 #-   cert [name] drop                           - remove cert configuration
 #-   account-rollover                           - change account key
 #-   account-deactivate                         - deactivate account
@@ -52,7 +53,7 @@
 #eab-
 #eab- Request External Account Binding (EAB) credentials:
 #eab-    Google: gcloud publicca external-account-keys create
-#eab       - run locally or in cloud shell web https://console.cloud.google.com/welcome?cloudshell=true
+#eab-      - run locally or in cloud shell web https://console.cloud.google.com/welcome?cloudshell=true
 #eab-    ZeroSSL: curl --data 'email=your@email.com' https://api.zerossl.com/acme/eab-credentials-email
 #eab-
 #domain-
@@ -286,6 +287,7 @@ challenge() {
 	req "$(json url _auth '"type":"'"$1"'-01"')" "{}" >_res || die "Validation Trigger Fail"
 }
 
+
 # Usage: order [cert-name] [retry-file]
 order() {
 	get_kid
@@ -328,6 +330,7 @@ order() {
 			log "Downloading certificate: $FILE.crt"
 			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
 			sed '1,/^$/d' _res >"$FILE.crt"
+			conf_set "cert $FILE b64" "$(openssl x509 -in "$FILE.crt" -outform DER 2>/dev/null | b64url)"
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
 			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
 			conf_set "cert $FILE end" "$EXP"
@@ -386,6 +389,15 @@ cert.end|cert.key|cert.key_path|cert.crt_path|cert.post_hook)
 	shift 3
 	conf_set "$K" "$*"
 	;;
+cert.revoke)
+	get_kid
+	URL=$(json revokeCert) || die 'No revokeCert URL'
+	B64=$(conf_get "cert $2 b64") || die "No cert $2 in base64 format"
+	{ [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
+	log "Revoking certificate $2"
+	req "$URL" '{"certificate":"'"$B64"'","reason":'"$4"'}'>_res || die 'Revoke failed'
+	log "Revoke DONE"
+	;;
 domain.drop|cert.drop|ip.drop)
 	log "Deleting $1: $2"
 	conf_set "$1 $2" '' '[^=]*'
@@ -412,7 +424,7 @@ account-rollover.)
 
 	expand_key _newkey _newkey
 	JWK=$(jwk _newkey)
-	URL=$(json keyChange) || die 'No keyChange url'
+	URL=$(json keyChange) || die 'No keyChange URL'
 
 	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)">_res || die 'Key rollover failed'
 

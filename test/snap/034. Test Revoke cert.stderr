@@ -1,0 +1,3 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Revoking certificate testcert
+Revoke DONE

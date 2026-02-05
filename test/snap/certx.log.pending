@@ -17,8 +17,11 @@
 2026-02-05 02:37:35 [1033] tester -- Sending CSR
 2026-02-05 02:37:35 [1033] tester -- Downloading certificate: testcert.crt
 2026-02-05 02:37:35 [1033] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 02:37:37 [1035] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:37 [1035] tester -- Order pendingcert: example.com
-2026-02-05 02:37:37 [1035] tester -- Creating key 'pendingcert.key'
-2026-02-05 02:37:37 [1035] tester -- Downloading certificate: pendingcert.crt
-2026-02-05 02:37:37 [1035] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:36 [1034] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:36 [1034] tester -- Revoking certificate testcert
+2026-02-05 02:37:36 [1034] tester -- Revoke DONE
+2026-02-05 02:37:38 [1036] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:38 [1036] tester -- Order pendingcert: example.com
+2026-02-05 02:37:38 [1036] tester -- Creating key 'pendingcert.key'
+2026-02-05 02:37:38 [1036] tester -- Downloading certificate: pendingcert.crt
+2026-02-05 02:37:38 [1036] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
