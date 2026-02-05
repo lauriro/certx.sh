@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.3 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.4 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -72,7 +72,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.3' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.4' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -110,8 +110,7 @@ conf_find() {
 }
 conf_ask() {
 	conf_has "$1" || {
-		# shellcheck disable=SC2059 # $2 is user-facing prompt text
-		printf "\n$2: " >&2
+		printf '\n%b: ' "$2" >&2
 		read -r R && [ -n "$R" ] && conf_set "$1" "$R"
 	}
 }
@@ -214,11 +213,11 @@ deploy_file() {
 			;;
 		ftps?://*)
 			curl -sS -T "$1" "$TARGET"
-			[ -z "$3" ] || printf "curl -sS 'ftp://%s' -Q 'DELE /%s'\n" "${P%%/*}" "${P#*/}" >>_cleanup
+			[ -z "$3" ] || printf 'curl -sS "ftp://%s" -Q "DELE %s"\n' "${P%%/*}" "'/${P#*/}'" >>_cleanup
 			;;
 		file://*|/*)
 			cat "$1" >"$P"
-			[ -z "$3" ] || printf 'rm '%s'\n' "$P" >>_cleanup
+			[ -z "$3" ] || printf 'rm %s\n' "'$P'" >>_cleanup
 			;;
 		*) false;;
 		esac || die 'Deploy failed'
