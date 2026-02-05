@@ -1,0 +1,7 @@
+
+Automated DNS validation requires executable script: ./dns-PROVIDER.sh
+Script adds TXT record and outputs cleanup commands to stdout.
+
+Available providers: cloudflare, digitalocean, linode, zone.eu
+  curl -O certx.sh/dns-PROVIDER.sh && chmod +x dns-PROVIDER.sh
+

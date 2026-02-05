@@ -3,7 +3,7 @@
 
 export BIN=$(cd ${0%/*}/..;pwd)
 export CMD="${CMD:-$BIN/certx.sh}"
-export SEQ
+export SEQ CERTX_PID=1000 USER=tester
 . ${0%/*}/assert.sh
 
 export CERTX_CONF="$TMP/certx.conf"
@@ -15,8 +15,6 @@ printf '%s\n' \
 	'_email = lauri@rooden.ee' \
 > "$CERTX_CONF"
 
-STRIP_PID='s/\[[0-9]*\] [^ ]*/[*]/'
-
 export PATH="$BIN/test/mock:$PATH"
 cd "$TMP"
 
@@ -26,6 +24,9 @@ Test "No arguments"
 Test "Invalid command" invalidcmd
 Test "Help" help
 Test "Help ca" help ca
+Test "Help dns" help dns
+Test "Help eab" help eab
+Test "Help order" help order
 Test "Help domain" help domain
 
 Check "certx.conf"
@@ -58,6 +59,12 @@ Check "certx.conf"
 Test "Set post_hook" cert mycert1 post_hook "systemctl reload nginx"
 Check "certx.conf"
 
+Test "Add cert with profile" cert profilecert example.com shortlived
+Check "certx.conf"
+
+Test "Drop cert with profile" cert profilecert drop
+Check "certx.conf"
+
 Test "Add second cert" cert mycert2 sub.example.com
 Check "certx.conf"
 
@@ -83,9 +90,10 @@ Test "Renew-all non-expiring" renew-all
 $CMD cert mycert1 end "" 2>/dev/null
 
 Fail 1 "authz-deactivate no URL" authz-deactivate
+Fail 1 "retry missing file" retry
+Fail 1 "retry invalid file" retry nonexistent.order
 
-Check "certx.log" ".config" "$STRIP_PID"
-
+Check "certx.log" ".config"
 # --- Order test with mocked curl ---
 
 # Generate test cert for mock response (only if doesn't exist)
@@ -108,8 +116,7 @@ Test "Order cert" cert testcert order
 # Filter random keys from config (keys vary per run, dates are deterministic via mock date)
 FILTER_CONF='/^_key =/d;/^_jwk/d;/^_thumb/d;/cert .* key =/d'
 Check "certx.conf" ".order" "$FILTER_CONF"
-Check "certx.log" ".order" "$STRIP_PID"
-
+Check "certx.log" ".order"
 # --- Test order with pending auth → challenge → valid ---
 export MOCK_TEST=pending
 
@@ -122,8 +129,7 @@ Test "Add cert for pending auth" cert pendingcert example.com
 Test "Order with pending auth" cert pendingcert order
 
 Check "certx.conf" ".pending" "$FILTER_CONF"
-Check "certx.log" ".pending" "$STRIP_PID"
-
+Check "certx.log" ".pending"
 # --- Test order with DNS challenge (Cloudflare) ---
 export MOCK_TEST=dns
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized  # Clean mock state from previous tests
@@ -144,8 +150,7 @@ export MOCK_DNS_TXT='"'$EXPECTED_VAL'"'
 Test "Order with DNS challenge" cert dnscert order
 
 Check "certx.conf" ".dns" "$FILTER_CONF"
-Check "certx.log" ".dns" "$STRIP_PID"
-
+Check "certx.log" ".dns"
 # --- Test account rollover ---
 export MOCK_TEST=""
 
@@ -153,8 +158,7 @@ Test "Account rollover" account-rollover
 
 # Verify key was updated but _kid stayed the same
 Check "certx.conf" ".rollover" "$FILTER_CONF"
-Check "certx.log" ".rollover" "$STRIP_PID"
-
+Check "certx.log" ".rollover"
 # --- Test account deactivation ---
 Test "Account deactivate" account-deactivate
 
@@ -165,5 +169,4 @@ Check "certx.conf" ".deactivate" "$FILTER_CONF"
 Test "Ca-reset" ca-reset
 Check "certx.conf" ".careset" "$FILTER_CONF"
 
-Check "certx.log" ".end" "$STRIP_PID"
-
+Check "certx.log" ".end"

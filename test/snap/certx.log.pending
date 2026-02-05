@@ -1,21 +1,24 @@
-2026-02-05 02:37:04 [282172] lauri -- ERROR: Invalid command!
-2026-02-05 02:37:10 [282290] lauri -- ERROR: No executable DNS validation hook!
-2026-02-05 02:37:21 [282593] lauri -- Deleting cert: mycert2
-2026-02-05 02:37:22 [282622] lauri -- Deleting domain: sub.example.com
-2026-02-05 02:37:23 [282651] lauri -- Deleting ip: 203.0.113.1
-2026-02-05 02:37:24 [282680] lauri -- Nothing to renew
-2026-02-05 02:37:25 [282721] lauri -- Nothing to renew
-2026-02-05 02:37:26 [282772] lauri -- ERROR: Authorization URL required
-2026-02-05 02:37:28 [282826] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:28 [282826] lauri -- Creating key '_key'
-2026-02-05 02:37:28 [282826] lauri -- Registering account
-2026-02-05 02:37:28 [282826] lauri -- Order testcert: example.com
-2026-02-05 02:37:28 [282826] lauri -- Creating key 'testcert.key'
-2026-02-05 02:37:28 [282826] lauri -- Sending CSR
-2026-02-05 02:37:28 [282826] lauri -- Downloading certificate: testcert.crt
-2026-02-05 02:37:28 [282826] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 02:37:30 [283422] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:30 [283422] lauri -- Order pendingcert: example.com
-2026-02-05 02:37:30 [283422] lauri -- Creating key 'pendingcert.key'
-2026-02-05 02:37:30 [283422] lauri -- Downloading certificate: pendingcert.crt
-2026-02-05 02:37:30 [283422] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:04 [1002] tester -- ERROR: Invalid command!
+2026-02-05 02:37:13 [1011] tester -- ERROR: No executable DNS validation hook!
+2026-02-05 02:37:22 [1020] tester -- Deleting cert: profilecert
+2026-02-05 02:37:26 [1024] tester -- Deleting cert: mycert2
+2026-02-05 02:37:27 [1025] tester -- Deleting domain: sub.example.com
+2026-02-05 02:37:28 [1026] tester -- Deleting ip: 203.0.113.1
+2026-02-05 02:37:29 [1027] tester -- Nothing to renew
+2026-02-05 02:37:30 [1028] tester -- Nothing to renew
+2026-02-05 02:37:31 [1029] tester -- ERROR: Authorization URL required
+2026-02-05 02:37:32 [1030] tester -- ERROR: Invalid order to retry 
+2026-02-05 02:37:33 [1031] tester -- ERROR: Invalid order to retry nonexistent.order
+2026-02-05 02:37:35 [1033] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:35 [1033] tester -- Creating key '_key'
+2026-02-05 02:37:35 [1033] tester -- Registering account
+2026-02-05 02:37:35 [1033] tester -- Order testcert: example.com
+2026-02-05 02:37:35 [1033] tester -- Creating key 'testcert.key'
+2026-02-05 02:37:35 [1033] tester -- Sending CSR
+2026-02-05 02:37:35 [1033] tester -- Downloading certificate: testcert.crt
+2026-02-05 02:37:35 [1033] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:37 [1035] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:37 [1035] tester -- Order pendingcert: example.com
+2026-02-05 02:37:37 [1035] tester -- Creating key 'pendingcert.key'
+2026-02-05 02:37:37 [1035] tester -- Downloading certificate: pendingcert.crt
+2026-02-05 02:37:37 [1035] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)

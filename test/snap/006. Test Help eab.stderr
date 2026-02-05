@@ -1,0 +1,5 @@
+
+Request External Account Binding (EAB) credentials:
+   Google: gcloud publicca external-account-keys create
+   ZeroSSL: curl --data 'email=your@email.com' https://api.zerossl.com/acme/eab-credentials-email
+

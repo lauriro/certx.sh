@@ -67,8 +67,9 @@
 #order-
 #order- In case of error "Could not validate ARI 'replaces' field" - try second time again, ARI is used once.
 #order-
+# shellcheck disable=SC2015 # A && B || C used intentionally
 
-: "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
+: "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
 export LC_ALL=C UA='certx.sh/26.2.3' CERTX_CONF CERTX_LOG
@@ -80,7 +81,7 @@ usage() {
 }
 log() {
 	printf "%s\n" "$3$1" >&2
-	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$$" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
+	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
 	[ -z "$2" ] || usage "$2"
 }
 die() {
@@ -459,7 +460,6 @@ renew-all.)
 	done
 	;;
 retry.)
-	# shellcheck disable=SC2015 # Intentionally run die on any failure
 	[ -f "$2" ] && CERT=${2%.*} && conf_has "cert $CERT" || die "Invalid order to retry $2"
 	cp "$2" _order && order "$CERT" "$2"
 	;;

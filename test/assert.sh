@@ -65,7 +65,7 @@ Fail() {
 }
 
 assert() {
-	: $((SEQ+=1))
+	: $((SEQ+=1)) $((CERTX_PID+=1))
 	EXIT=$1
 	NAME="${SEQ#?}. $2"
 	LINE=$OK
