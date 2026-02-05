@@ -139,7 +139,7 @@ sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 	printf '{"protected":"%s","payload":"%s","signature":"%s"}' "$PROT" "$DATA" "$SIG"
 }
 req() {
-	[ -n "$2" ] && {
+	[ $# -gt 1 ] && {
 		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce'
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
@@ -307,12 +307,12 @@ order() {
 	ORDER_URL=$(sed -n 's/^location: *//pi' _order)
 	[ -n "$ORDER_URL" ] || die 'No order location'
 	for AUTH in $(json authorizations _order); do
-		req "$AUTH" >_auth || die 'Auth failed'
+		req "$AUTH" '' >_auth || die 'Auth failed'
 		[ "$(json status _auth '"challenges"')" = "pending" ] && challenge "$AUTH"
 	done
 
 	expand_key "cert $FILE key" "$FILE.key"
-	while req "$ORDER_URL" >_order; do
+	while req "$ORDER_URL" '' >_order; do
 		case "$(json status _order)" in
 		pending|processing)
 			SLEEP=$(seconds_to "$(sed -n 's/retry-after: *//pi' _order)") ||:
@@ -326,7 +326,7 @@ order() {
 			;;
 		valid)
 			log "Downloading certificate: $FILE.crt"
-			req "$(json certificate _order)" >_res || die 'Certificate download failed'
+			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
 			sed '1,/^$/d' _res >"$FILE.crt"
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
 			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
@@ -445,7 +445,7 @@ renew-all.)
 			# Stored ARI start reached - renew
 			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
-					req "$ARI/$ID" >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && END=$START
+					req "$ARI/$ID" '' >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && END=$START
 					RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
 				}
 			}
