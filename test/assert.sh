@@ -4,7 +4,8 @@ LANG=C
 SUB=$1
 SEQ=1000
 
-export TMP=$(mktemp -d)
+export TMP=/tmp/certx-test
+rm -rf "$TMP" && mkdir -p "$TMP"
 
 SNAP=$BIN/test/snap
 

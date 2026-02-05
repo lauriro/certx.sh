@@ -3,6 +3,7 @@
 
 export BIN=$(cd ${0%/*}/..;pwd)
 export CMD="${CMD:-$BIN/certx.sh}"
+export SEQ
 . ${0%/*}/assert.sh
 
 export CERTX_CONF="$TMP/certx.conf"
@@ -14,10 +15,20 @@ printf '%s\n' \
 	'_email = lauri@rooden.ee' \
 > "$CERTX_CONF"
 
-STRIP_TIMESTAMP_AND_PID='s/^.*--//'
-STRIP_TMP='s|/tmp/tmp\.[^/]*|/tmp/TMP|g'
+STRIP_PID='s/\[[0-9]*\] [^ ]*/[*]/'
+
+export PATH="$BIN/test/mock:$PATH"
+cd "$TMP"
 
 echo "Test '$CMD' in '$TMP'"
+
+Test "No arguments"
+Test "Invalid command" invalidcmd
+Test "Help" help
+Test "Help ca" help ca
+Test "Help domain" help domain
+
+Check "certx.conf"
 
 Test "Add domain" domain example.com dns manual
 Check "certx.conf"
@@ -61,13 +72,19 @@ Check "certx.conf"
 Test "Drop domain" domain sub.example.com drop
 Check "certx.conf"
 
+Test "Drop ip" ip 203.0.113.1 drop
+Check "certx.conf"
+
 Test "Renew-all nothing" renew-all
 
-Test "No arguments"
+# Non-expiring cert should not be renewed
+$CMD cert mycert1 end "Dec 31 23:59:59 2099 GMT" 2>/dev/null
+Test "Renew-all non-expiring" renew-all
+$CMD cert mycert1 end "" 2>/dev/null
 
-Test "Invalid command" invalidcmd
+Fail 1 "authz-deactivate no URL" authz-deactivate
 
-Check "certx.log" ".config" "$STRIP_TIMESTAMP_AND_PID"
+Check "certx.log" ".config" "$STRIP_PID"
 
 # --- Order test with mocked curl ---
 
@@ -83,28 +100,15 @@ Check "certx.log" ".config" "$STRIP_TIMESTAMP_AND_PID"
 
 # Set up mock environment
 export MOCK_STATE="$TMP"
-export PATH="$BIN/test/mock:$PATH"
-cd "$TMP"
 
 Test "Add cert for order" cert testcert example.com
 
-# Custom assert: filter varying cert date and days count from stderr
-FILTER_VARYING='s/Expires: .*/Expires: FILTERED/;s/([0-9]* days)/(N days)/'
-: $((SEQ+=1))
-NAME="${SEQ#?}. Test Order cert"
-LINE=$OK
-$CMD cert testcert order >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
-_EXIT=$?
-sed "$FILTER_VARYING" "$TMP/$NAME.stderr" > "$TMP/$NAME.stderr.f" && mv "$TMP/$NAME.stderr.f" "$TMP/$NAME.stderr"
-Check "$NAME.stderr" ""
-Check "$NAME.stdout" ""
-[ "$_EXIT" = "0" ] ||: LINE="exit status expected:0 actual:$_EXIT\n$ERR"
-printf "$LINE $NAME\n"
+Test "Order cert" cert testcert order
 
-# Filter random keys and dates from config/log
-FILTER_CONF='/^_key =/d;/^_jwk/d;/^_thumb/d;/cert .* key =/d;/cert .* end/d'
+# Filter random keys from config (keys vary per run, dates are deterministic via mock date)
+FILTER_CONF='/^_key =/d;/^_jwk/d;/^_thumb/d;/cert .* key =/d'
 Check "certx.conf" ".order" "$FILTER_CONF"
-Check "certx.log" ".order" "$STRIP_TIMESTAMP_AND_PID;$FILTER_VARYING;$STRIP_TMP"
+Check "certx.log" ".order" "$STRIP_PID"
 
 # --- Test order with pending auth → challenge → valid ---
 export MOCK_TEST=pending
@@ -115,19 +119,10 @@ $CMD domain example.com http "$TMP/webroot" 2>/dev/null
 
 Test "Add cert for pending auth" cert pendingcert example.com
 
-: $((SEQ+=1))
-NAME="${SEQ#?}. Test Order with pending auth"
-LINE=$OK
-$CMD cert pendingcert order >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
-_EXIT=$?
-sed "$FILTER_VARYING" "$TMP/$NAME.stderr" > "$TMP/$NAME.stderr.f" && mv "$TMP/$NAME.stderr.f" "$TMP/$NAME.stderr"
-Check "$NAME.stderr" ""
-Check "$NAME.stdout" ""
-[ "$_EXIT" = "0" ] ||: LINE="exit status expected:0 actual:$_EXIT\n$ERR"
-printf "$LINE $NAME\n"
+Test "Order with pending auth" cert pendingcert order
 
-Check "certx.conf" ".pending" "$FILTER_CONF;$STRIP_TMP"
-Check "certx.log" ".pending" "$STRIP_TIMESTAMP_AND_PID;$FILTER_VARYING;$STRIP_TMP"
+Check "certx.conf" ".pending" "$FILTER_CONF"
+Check "certx.log" ".pending" "$STRIP_PID"
 
 # --- Test order with DNS challenge (Cloudflare) ---
 export MOCK_TEST=dns
@@ -146,49 +141,29 @@ TOKEN="mock-dns-token"
 EXPECTED_VAL=$(printf '%s.%s' "$TOKEN" "$THUMB" | openssl dgst -sha256 -binary | base64 | tr '+/' '-_' | tr -d '=')
 export MOCK_DNS_TXT='"'$EXPECTED_VAL'"'
 
-: $((SEQ+=1))
-NAME="${SEQ#?}. Test Order with DNS challenge"
-LINE=$OK
-$CMD cert dnscert order >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
-_EXIT=$?
-sed "$FILTER_VARYING" "$TMP/$NAME.stderr" > "$TMP/$NAME.stderr.f" && mv "$TMP/$NAME.stderr.f" "$TMP/$NAME.stderr"
-Check "$NAME.stderr" ""
-Check "$NAME.stdout" ""
-[ "$_EXIT" = "0" ] ||: LINE="exit status expected:0 actual:$_EXIT\n$ERR"
-printf "$LINE $NAME\n"
+Test "Order with DNS challenge" cert dnscert order
 
-Check "certx.conf" ".dns" "$FILTER_CONF;$STRIP_TMP"
-Check "certx.log" ".dns" "$STRIP_TIMESTAMP_AND_PID;$FILTER_VARYING;$STRIP_TMP"
+Check "certx.conf" ".dns" "$FILTER_CONF"
+Check "certx.log" ".dns" "$STRIP_PID"
 
 # --- Test account rollover ---
 export MOCK_TEST=""
 
-: $((SEQ+=1))
-NAME="${SEQ#?}. Test Account rollover"
-LINE=$OK
-$CMD account-rollover >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
-_EXIT=$?
-Check "$NAME.stderr" ""
-Check "$NAME.stdout" ""
-[ "$_EXIT" = "0" ] ||: LINE="exit status expected:0 actual:$_EXIT\n$ERR"
-printf "$LINE $NAME\n"
+Test "Account rollover" account-rollover
 
 # Verify key was updated but _kid stayed the same
-Check "certx.conf" ".rollover" "$FILTER_CONF;$STRIP_TMP"
-Check "certx.log" ".rollover" "$STRIP_TIMESTAMP_AND_PID;$FILTER_VARYING;$STRIP_TMP"
+Check "certx.conf" ".rollover" "$FILTER_CONF"
+Check "certx.log" ".rollover" "$STRIP_PID"
 
 # --- Test account deactivation ---
-: $((SEQ+=1))
-NAME="${SEQ#?}. Test Account deactivate"
-LINE=$OK
-$CMD account-deactivate >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
-_EXIT=$?
-Check "$NAME.stderr" ""
-Check "$NAME.stdout" ""
-[ "$_EXIT" = "0" ] ||: LINE="exit status expected:0 actual:$_EXIT\n$ERR"
-printf "$LINE $NAME\n"
+Test "Account deactivate" account-deactivate
 
 # Verify account config was cleared
-Check "certx.conf" ".deactivate" "$FILTER_CONF;$STRIP_TMP"
-Check "certx.log" ".deactivate" "$STRIP_TIMESTAMP_AND_PID;$FILTER_VARYING;$STRIP_TMP"
+Check "certx.conf" ".deactivate" "$FILTER_CONF"
+
+# --- Test ca-reset (must be last - wipes CA config) ---
+Test "Ca-reset" ca-reset
+Check "certx.conf" ".careset" "$FILTER_CONF"
+
+Check "certx.log" ".end" "$STRIP_PID"
 

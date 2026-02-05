@@ -3,4 +3,4 @@ Order dnscert: dns.example.com
 Creating key 'dnscert.key'
 Sending CSR
 Downloading certificate: dnscert.crt
-Expires: FILTERED
+Expires: May  1 22:09:24 2026 GMT (85 days)

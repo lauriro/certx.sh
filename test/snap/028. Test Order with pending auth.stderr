@@ -2,4 +2,4 @@ CA: https://acme-staging-v02.api.letsencrypt.org/directory
 Order pendingcert: example.com
 Creating key 'pendingcert.key'
 Downloading certificate: pendingcert.crt
-Expires: FILTERED
+Expires: May  1 22:09:24 2026 GMT (85 days)

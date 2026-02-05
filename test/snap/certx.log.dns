@@ -1,24 +1,28 @@
-2026-02-05 00:20:02 [118754] lauri -- Deleting cert: mycert2
-2026-02-05 00:20:02 [118781] lauri -- Deleting domain: sub.example.com
-2026-02-05 00:20:02 [118808] lauri -- Nothing to renew
-2026-02-05 00:20:02 [118844] lauri -- ERROR: Invalid command!
-2026-02-05 00:20:02 [118896] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:20:02 [118896] lauri -- Creating key '_key'
-2026-02-05 00:20:02 [118896] lauri -- Registering account
-2026-02-05 00:20:02 [118896] lauri -- Order testcert: example.com
-2026-02-05 00:20:02 [118896] lauri -- Creating key 'testcert.key'
-2026-02-05 00:20:03 [118896] lauri -- Sending CSR
-2026-02-05 00:20:03 [118896] lauri -- Downloading certificate: testcert.crt
-2026-02-05 00:20:03 [118896] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 00:20:03 [119481] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:20:03 [119481] lauri -- Order pendingcert: example.com
-2026-02-05 00:20:03 [119481] lauri -- Creating key 'pendingcert.key'
-2026-02-05 00:20:03 [119481] lauri -- Downloading certificate: pendingcert.crt
-2026-02-05 00:20:03 [119481] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 00:20:03 [119811] lauri -- ERROR: No executable DNS validation hook!
-2026-02-05 00:20:03 [119869] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:20:03 [119869] lauri -- Order dnscert: dns.example.com
-2026-02-05 00:20:04 [119869] lauri -- Creating key 'dnscert.key'
-2026-02-05 00:20:04 [119869] lauri -- Sending CSR
-2026-02-05 00:20:04 [119869] lauri -- Downloading certificate: dnscert.crt
-2026-02-05 00:20:04 [119869] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:04 [233740] lauri -- ERROR: Invalid command!
+2026-02-05 02:37:10 [233858] lauri -- ERROR: No executable DNS validation hook!
+2026-02-05 02:37:21 [234162] lauri -- Deleting cert: mycert2
+2026-02-05 02:37:22 [234191] lauri -- Deleting domain: sub.example.com
+2026-02-05 02:37:23 [234220] lauri -- ERROR: Invalid command!
+2026-02-05 02:37:24 [234242] lauri -- Nothing to renew
+2026-02-05 02:37:25 [234283] lauri -- Nothing to renew
+2026-02-05 02:37:26 [234334] lauri -- ERROR: Authorization URL required
+2026-02-05 02:37:28 [234388] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:28 [234388] lauri -- Creating key '_key'
+2026-02-05 02:37:28 [234388] lauri -- Registering account
+2026-02-05 02:37:28 [234388] lauri -- Order testcert: example.com
+2026-02-05 02:37:28 [234388] lauri -- Creating key 'testcert.key'
+2026-02-05 02:37:28 [234388] lauri -- Sending CSR
+2026-02-05 02:37:28 [234388] lauri -- Downloading certificate: testcert.crt
+2026-02-05 02:37:28 [234388] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:30 [234987] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:30 [234987] lauri -- Order pendingcert: example.com
+2026-02-05 02:37:30 [234987] lauri -- Creating key 'pendingcert.key'
+2026-02-05 02:37:30 [234987] lauri -- Downloading certificate: pendingcert.crt
+2026-02-05 02:37:30 [234987] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:30 [235323] lauri -- ERROR: No executable DNS validation hook!
+2026-02-05 02:37:32 [235384] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:32 [235384] lauri -- Order dnscert: dns.example.com
+2026-02-05 02:37:32 [235384] lauri -- Creating key 'dnscert.key'
+2026-02-05 02:37:32 [235384] lauri -- Sending CSR
+2026-02-05 02:37:32 [235384] lauri -- Downloading certificate: dnscert.crt
+2026-02-05 02:37:32 [235384] lauri -- Expires: May  1 22:09:24 2026 GMT (85 days)

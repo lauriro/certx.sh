@@ -5,4 +5,4 @@ Order testcert: example.com
 Creating key 'testcert.key'
 Sending CSR
 Downloading certificate: testcert.crt
-Expires: FILTERED
+Expires: May  1 22:09:24 2026 GMT (85 days)

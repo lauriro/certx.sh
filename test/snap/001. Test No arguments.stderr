@@ -1,5 +1,5 @@
 
-certx.sh - v26.2.2 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+certx.sh - v26.2.3 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 
 Commands:
   domain                                     - list configured domains

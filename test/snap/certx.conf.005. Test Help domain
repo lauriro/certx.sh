@@ -1,0 +1,3 @@
+_terms = YES
+_ca = https://acme-staging-v02.api.letsencrypt.org/directory
+_email = lauri@rooden.ee

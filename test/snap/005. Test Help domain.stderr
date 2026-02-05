@@ -1,0 +1,9 @@
+
+Configure domain/ip validation before ordering certificates.
+
+Examples:
+  ./certx.sh domain example.com dns manual                  # Interactive (you add TXT record)
+  ./certx.sh domain example.com dns cloudflare TOKEN        # Automated via ./dns-cloudflare.sh script
+  ./certx.sh domain example.com http /www                   # Creates HTTP challenge file to /www/.well-known/acme-challenge/
+  ./certx.sh ip 203.0.113.1 http ssh://203.0.113.1/www      # IP identifiers only support http-01 validation
+

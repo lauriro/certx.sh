@@ -1,10 +1,3 @@
-_ca = https://acme-staging-v02.api.letsencrypt.org/directory
-_email = lauri@rooden.ee
-_jwk = {"crv":"P-256","kty":"EC","x":"ZvDIWUIsCLLQNpGoOvvb_K2qGtpj6OtMejX1dR1SLFA","y":"5akkAaSiE0VGvGhXFDvjC5o2rz0QkzV-KCaTwHahsPM"}
-_key = MDECAQEEIF5SYjvgspx11nYGP_sB5eu7hK_VDHS00iln6ULHEjvjoAoGCCqGSM49AwEH
-_kid = https://mock.acme/acct/1
-_terms = YES
-_thumb = We48fhGyr2hS55goSqN-mc8xHJPOK_l0s2p7T0XndKI
 cert dnscert = dns.example.com
 cert dnscert ari = Ggiegu-1hWp7idlkxpqxXSXwkn8.TBT-GYs2yWe65ZZ4sA9_CXtjMQo
 cert dnscert ari_replace = 1

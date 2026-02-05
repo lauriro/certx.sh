@@ -1,0 +1,9 @@
+#!/bin/sh
+# Mock date for testing
+
+case "$1" in
++%*) set -- "-d@$((SEQ+1770250822))" "$@";;
+esac
+
+/bin/date "$@"
+

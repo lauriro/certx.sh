@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.2 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.3 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -68,7 +68,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.2' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.3' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -77,7 +77,7 @@ usage() {
 }
 log() {
 	printf "%s\n" "$3$1" >&2
-	printf '%s [%s] %s -- %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$$" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
+	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$$" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
 	[ -z "$2" ] || usage "$2"
 }
 die() {
@@ -115,7 +115,7 @@ b64url() {
 	openssl base64 | tr '/+' '_-' | tr -d '=\n'
 }
 b64dec() {
-	printf "%s%$(((4-${#1}%4)%4))s\n" "$1" "" | tr '_ -' '/=+' | openssl base64 -d
+	printf "%s%$(((4-${#1}%4)%4))s\n" "$1" '' | tr '_ -' '/=+' | openssl base64 -d
 }
 shaB64() {
 	printf %s "$1" | openssl sha256 -binary | b64url
@@ -165,16 +165,16 @@ get_kid() {
 	conf_ask _terms "CA Terms of Service: $(json termsOfService)\nAccept? (type YES)"
 	expand_key _key _key
 	conf_has _kid || {
-		log "Registering account"
+		log 'Registering account'
 		JWK=$(jwk _key)
 		conf_set _jwk "$JWK"
 		conf_set _thumb "$(shaB64 "$JWK")"
 		EMAIL=$(conf_get _email) && EMAIL=',"contact":["mailto:'"$EMAIL"'"]'
-		EAB=""
+		EAB=''
 		[ "$(json externalAccountRequired)" = "true" ] && {
 			log 'External Account Binding required!' eab
-			conf_ask _kid "EAB key ID"
-			conf_ask _mac "EAB HMAC"
+			conf_ask _kid 'EAB key ID'
+			conf_ask _mac 'EAB HMAC'
 			PROTECTED=$(printf '{"alg":"HS256","kid":"%s","url":"%s"}' "$(conf_get _kid)" "$(json newAccount)" | b64url)
 			PAYLOAD=$(printf %s "$JWK" | b64url)
 			HEX=$(b64dec "$(conf_get _mac)" | od -An -tx1 | tr -d ' \n')
@@ -189,8 +189,8 @@ get_kid() {
 }
 cleanup() {
 	[ -s _cleanup ] || return 0
-	log "Cleanup challenges"
-	sh _cleanup || log "Warning: Cleanup failed"
+	log 'Cleanup challenges'
+	sh _cleanup || log 'Warning: Cleanup failed'
 	:>_cleanup
 }
 seconds_to() {
@@ -214,10 +214,10 @@ deploy_file() {
 			;;
 		file://*|/*)
 			cat "$1" >"$P"
-			[ -z "$3" ] || printf "rm '%s'\n" "$P" >>_cleanup
+			[ -z "$3" ] || printf 'rm '%s'\n' "$P" >>_cleanup
 			;;
 		*) false;;
-		esac || die "Deploy failed"
+		esac || die 'Deploy failed'
 	done
 }
 dns_query() {
@@ -229,7 +229,7 @@ dns_query() {
 }
 wait_dns() {
 	has dig || has host || {
-		log "WARNING: dig/host not found, sleeping 120s without verification"
+		log 'WARNING: dig/host not found, sleeping 120s without verification'
 		sleep 120
 		return 0
 	}
@@ -239,6 +239,7 @@ wait_dns() {
 		[ -n "$(dns_query TXT "$2" "$SOA" "$3")" ] && { log "  OK ($((i*2))s)"; return 0; }
 		sleep 2; printf "."
 	done >&2
+	die "DNS propagation timeout $2"
 }
 get_domain() {
 	NAME=$1
@@ -250,13 +251,13 @@ get_domain() {
 }
 
 challenge() {
-	NAME=$(json value _auth)
+	NAME=$(json value _auth) || die 'No identifier in authorization'
 	RR="_acme-challenge.$NAME"
 	DOMAIN=$(get_domain "$NAME")
 	log "Authorization $NAME: $1"
 	# shellcheck disable=SC2046 # Intentionally split into positional params
 	set -- $(conf_get "domain $DOMAIN" || conf_get "ip $DOMAIN")
-	TOK=$(json token _auth '"type":"'"$1"'-01"')
+	TOK=$(json token _auth '"type":"'"$1"'-01"') || die 'No challenge token'
 	THUMB=$(conf_get _thumb)
 	VAL=$(shaB64 "$TOK.$THUMB")
 
@@ -310,7 +311,7 @@ order() {
 	while req "$ORDER_URL" >_order; do
 		case "$(json status _order)" in
 		pending|processing)
-			SLEEP=$(seconds_to "$(sed -n 's/retry-after: *//pi' _order)")
+			SLEEP=$(seconds_to "$(sed -n 's/retry-after: *//pi' _order)") ||:
 			sleep "${SLEEP:-2}"
 			;;
 		ready)
@@ -344,8 +345,8 @@ order() {
 			cleanup
 
 			HOOK=$(conf_get "cert $FILE post_hook") && {
-				log "Running post-hook"
-				sh -c "$HOOK" || log "Warning: Post-hook failed"
+				log 'Running post-hook'
+				sh -c "$HOOK" || log 'Warning: Post-hook failed'
 			}
 			return 0
 			;;
@@ -370,7 +371,7 @@ CA=$(conf_get _ca) || {
 	log 'No CA configured' ca
 	printf "CA directory URL: " >&2
 	read -r CA && conf_set _ca "$CA"
-	conf_ask _email "Account email (optional)"
+	conf_ask _email 'Account email (optional)'
 }
 
 case "$1.$3" in
@@ -387,7 +388,7 @@ domain.drop|cert.drop)
 	conf_set "$1 $2" '' '[^=]*'
 	;;
 ca-reset.)
-	log "Deleting all CA configuration"
+	log 'Deleting all CA configuration'
 	conf_set "_" '' '[^=]*'
 	;;
 cert.?*|domain.dns|domain.http|ip.http)
@@ -395,20 +396,20 @@ cert.?*|domain.dns|domain.http|ip.http)
 	K="$1 $2"
 	shift 2
 	conf_set "$K" "$*"
-	[ "$1" != dns ] || [ "$2" = manual ] || [ -x "./dns-${2}.sh" ] || die "No executable DNS validation hook!" dns
+	[ "$1" != dns ] || [ "$2" = manual ] || [ -x "./dns-${2}.sh" ] || die 'No executable DNS validation hook!' dns
 	;;
 cert.|domain.|ip.)
 	printf 'List of %ss:\n' "$1"
-	conf_find "$1" "" "  "
+	conf_find "$1" '' '  '
 	;;
 account-rollover.)
-	conf_has _kid || die "No account to rollover"
-	log "Rolling over account key"
+	conf_has _kid || die 'No account to rollover'
+	log 'Rolling over account key'
 	get_kid
 
 	expand_key _newkey _newkey
 	JWK=$(jwk _newkey)
-	URL=$(json keyChange) || die "No keyChange url"
+	URL=$(json keyChange) || die 'No keyChange url'
 
 	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)">_res || die 'Key rollover failed'
 
@@ -417,18 +418,18 @@ account-rollover.)
 	conf_set _thumb "$(shaB64 "$JWK")"
 	conf_set _newkey ''
 
-	log "Account key rollover completed"
+	log 'Account key rollover completed'
 	;;
 account-deactivate.)
-	conf_has _kid || die "No account to deactivate"
-	log "Deactivating account"
+	conf_has _kid || die 'No account to deactivate'
+	log 'Deactivating account'
 	get_kid
 	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed'
 	conf_set "_" '' '\(kid\|key\|jwk\|thumb\)'
 	log "Account deactivated successfully"
 	;;
 authz-deactivate.)
-	[ -z "$2" ] && die "Authorization URL required"
+	[ -z "$2" ] && die 'Authorization URL required'
 	log "Deactivating authorization: $2"
 	get_kid
 	req "$2" '{"status":"deactivated"}' >_res || die 'Authorization deactivation failed'
@@ -437,8 +438,8 @@ authz-deactivate.)
 renew-all.)
 	RENEW=$(IFS=$NL; for C in $(conf_find cert end); do
 		DUE=$((${2:-15}*86400)) END=${C##*= } NAME=${C%% =*}
-		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && {
-			DUE=0 RA=$(conf_get "cert $NAME ari_retry")
+		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
+			RA=$(conf_get "cert $NAME ari_retry") ||:
 			[ "${RA:-$NOW}" -le "$NOW" ] && {
 				# Drop ari_replaces on req failure so next req is without "replaces":CERT_ID (that may be out of sync with CA)
 				req "$ARI/$ID" >_res || conf_set "cert $NAME ari_replace" ''
@@ -446,9 +447,9 @@ renew-all.)
 				END=$(json start _res || conf_get "cert $NAME ari_start") && conf_set "cert $NAME ari_start" "$END"
 			}
 		}
-		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME"
+		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME" ||:
 	done 2>/dev/null)
-	[ -z "$RENEW" ] && { log "Nothing to renew"; exit 0; }
+	[ -z "$RENEW" ] && { log 'Nothing to renew'; exit 0; }
 	log "Renewing: $RENEW"
 	for CERT in $RENEW; do
 		( order "$CERT" ) || log "Warning: Failed to renew $CERT"
@@ -460,7 +461,7 @@ retry.)
 	cp "$2" _order && order "$CERT" "$2"
 	;;
 *)
-	[ $# -gt 0 ] && [ "$1" != help ] && die "Invalid command!" "-*"
+	[ $# -gt 0 ] && [ "$1" != help ] && die 'Invalid command!' "-*"
 	usage "${2}"
 	;;
 esac

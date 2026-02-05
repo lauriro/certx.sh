@@ -30,3 +30,7 @@
 2026-02-05 02:37:33 [235804] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:33 [235804] lauri -- Creating key '_newkey'
 2026-02-05 02:37:33 [235804] lauri -- Account key rollover completed
+2026-02-05 02:37:34 [236070] lauri -- Deactivating account
+2026-02-05 02:37:34 [236070] lauri -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:34 [236070] lauri -- Account deactivated successfully
+2026-02-05 02:37:35 [236208] lauri -- Deleting all CA configuration
