@@ -1,2 +1,2 @@
 
-ERROR: Invalid order to retry nonexistent.order
+ERROR: Invalid order: nonexistent.order

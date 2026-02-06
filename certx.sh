@@ -81,7 +81,7 @@ usage() {
 	sed -n "/^#$1- \{0,1\}/s,,,p" "$0" >&2
 }
 log() {
-	printf "%s\n" "$3$1" >&2
+	printf '%s\n' "$3$1" >&2
 	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
 	[ -z "$2" ] || usage "$2"
 }
@@ -91,6 +91,10 @@ die() {
 }
 has() {
 	for cmd; do CMD=$cmd; command -v "$cmd" >/dev/null || return 1; done
+}
+ask() {
+	printf '\n%b: ' "$1" >&2
+	read -r R && [ -n "$R" ] && printf %s "$R"
 }
 _conf() {
 	sed -n "/^$(printf %s "$1" | sed 's/[][\\.^$*]/\\&/g')$3 *= */$2" "$CERTX_CONF"
@@ -108,10 +112,6 @@ conf_set() {
 }
 conf_find() {
 	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
-}
-ask() {
-	printf '\n%b: ' "$1" >&2
-	read -r R && [ -n "$R" ] && printf '%s' "$R"
 }
 conf_ask() {
 	conf_has "$1" || conf_set "$1" "$(ask "$1")"
@@ -165,8 +165,8 @@ jwk() {
 }
 get_kid() {
 	[ -z "$KID" ] || return
+	req "$CA" >_dir || die "Cannot get CA: $CA"
 	log "CA: $CA"
-	req "$CA" >_dir || die "Cannot get CA directory '$CA'"
 	conf_ask _terms "CA Terms of Service: $(json termsOfService)\nAccept? (type YES)"
 	expand_key _key _key
 	conf_has _kid || {
@@ -242,7 +242,7 @@ wait_dns() {
 	SOA=$(dns_query SOA "$1")
 	for i in $(seq 1 150); do
 		[ -n "$(dns_query TXT "$2" "$SOA" "$3")" ] && { log "  OK ($((i*2))s)"; return 0; }
-		sleep 2; printf "."
+		sleep 2; printf '.'
 	done >&2
 	die "DNS propagation timeout $2"
 }
@@ -281,7 +281,7 @@ challenge() {
 		;;
 	http.*)
 		[ -z "$2" ] && die "Webroot required: domain set $NAME http /var/www/html"
-		printf %s "$TOK.$THUMB" >"_challenge"
+		printf %s "$TOK.$THUMB" >_challenge
 		deploy_file "_challenge" "$2/.well-known/acme-challenge/$TOK" cleanup
 		;;
 	esac
@@ -311,7 +311,7 @@ order() {
 	[ -n "$ORDER_URL" ] || die 'No order location'
 	for AUTH in $(json authorizations _order); do
 		req "$AUTH" '' >_auth || die 'Auth failed'
-		[ "$(json status _auth '"challenges"')" = "pending" ] && challenge "$AUTH"
+		[ "$(json status _auth '"challenges"')" = 'pending' ] && challenge "$AUTH"
 	done
 
 	expand_key "cert $FILE key" "$FILE.key"
@@ -322,7 +322,7 @@ order() {
 			sleep "${SLEEP:-2}"
 			;;
 		ready)
-			log "Sending CSR"
+			log 'Sending CSR'
 			ALT=$(IFS=,;for N in $1;do get_domain "$N" DNS IP >/dev/null && printf '%s:%s,' "$TYPE" "$N"; done)
 			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=${ALT%,}" -outform DER | b64url)
 			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die 'CSR failed'
@@ -396,7 +396,7 @@ cert.revoke)
 	{ [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
 	log "Revoking certificate $2"
 	req "$URL" '{"certificate":"'"$B64"'","reason":'"$4"'}'>_res || die 'Revoke failed'
-	log "Revoke DONE"
+	log 'Revoke DONE'
 	;;
 domain.drop|cert.drop|ip.drop)
 	log "Deleting $1: $2"
@@ -471,7 +471,7 @@ renew-all.)
 	done
 	;;
 retry.)
-	[ -f "$2" ] && CERT=${2%.*} && conf_has "cert $CERT" || die "Invalid order to retry $2"
+	[ -f "$2" ] && CERT=${2%.*} && conf_has "cert $CERT" || die "Invalid order: $2"
 	cp "$2" _order && order "$CERT" "$2"
 	;;
 *)
