@@ -7,7 +7,7 @@ SEQ=1000
 export TMP=/tmp/certx-test
 rm -rf "$TMP" && mkdir -p "$TMP"
 
-SNAP=$BIN/test/snap
+: ${SNAP:=$BIN/test/snap}
 
 : ${PASS:=0}
 : ${FAIL:=0}

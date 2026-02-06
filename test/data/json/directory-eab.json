@@ -1,0 +1,15 @@
+{
+  "newNonce": "https://acme.example.com/new-nonce",
+  "newAccount": "https://acme.example.com/new-account",
+  "newOrder": "https://acme.example.com/new-order",
+  "newAuthz": "https://acme.example.com/new-authz",
+  "revokeCert": "https://acme.example.com/revoke-cert",
+  "keyChange": "https://acme.example.com/key-change",
+  "renewalInfo": "https://acme.example.com/renewal-info",
+  "meta": {
+    "termsOfService": "https://example.com/GTS-SA.pdf",
+    "website": "https://example.com",
+    "caaIdentities": ["example.com"],
+    "externalAccountRequired": true
+  }
+}

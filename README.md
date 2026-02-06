@@ -1,11 +1,13 @@
 # certx.sh
 
-Simple ACME client for green certificates.  
+Simple ACME client for green certificates.
+Works with Let's Encrypt, Google Trust, ZeroSSL.
 Just a shell script - requires curl, openssl, and standard Unix utilities (sed, sort, etc.).
 
-Works with Let's Encrypt, Google Trust, ZeroSSL.  
-Supports DNS/HTTP validation, account rollover, EAB, ARI, IP certs, and multi-server deployment via SSH/FTP.  
-CA-friendly: creates one account and reuses it for all certificates.  
+~500 lines of POSIX shell includes
+DNS/HTTP challenges, multi-server deployment (ssh/ftp), account rollover/deactivation, EAB, ARI, wildcard/IP/shortlived/alternate certs.
+
+> CA-friendly: creates one account and reuses it for all certificates.
 
 
 ## Quick Start
@@ -27,10 +29,11 @@ On first run it'll prompt for CA URL and optional email. The account is created 
 # DNS - interactive (you add TXT record manually)
 ./certx.sh domain example.com dns manual
 
-# DNS - automated via provider hook
-./certx.sh domain example.com dns cloudflare TOKEN
-./certx.sh domain example.com dns digitalocean TOKEN
-./certx.sh domain example.com dns linode TOKEN
+# Automated DNS validation requires executable script: ./dns-PROVIDER.sh
+# Script adds TXT record and outputs cleanup commands to stdout.
+
+# Available providers: cloudflare, digitalocean, linode, zone.eu
+curl -O certx.sh/dns-PROVIDER.sh && chmod +x dns-PROVIDER.sh
 
 # HTTP - writes challenge file to webroot (supports ssh://, needs key login for automation)
 # Note: Webroot directory `/.well-known/acme-challenge/` should exist and be accessible via HTTP.
@@ -39,7 +42,7 @@ On first run it'll prompt for CA URL and optional email. The account is created 
 
 # IP - only HTTP validation, can mix with domains
 ./certx.sh ip 203.0.113.1 http ssh://203.0.113.1/www
-./certx.sh cert mycert example.com,203.0.113.1
+./certx.sh cert mycert 'example.com,*.example.com,203.0.113.1'
 ```
 
 ## Deployment
@@ -55,9 +58,9 @@ Deploy certs to multiple locations (local, SSH, or FTP):
 ## Renewal
 
 ```bash
-./certx.sh cert mycert renew              # force renew one
-./certx.sh renew-all                      # renew all expiring within 15 days
-./certx.sh renew-all 30                   # renew all expiring within 30 days
+./certx.sh cert mycert order              # order new cert ignoring expiry
+./certx.sh renew-all                      # renew all certs via ARI, fallback to 15 days before expiry
+./certx.sh renew-all 30                   # renew all certs via ARI, fallback to 30 days before expiry
 ```
 
 Note: `renew-all` only works for certificates that have been successfully ordered at least once manually using `cert <name> order`.
@@ -118,13 +121,6 @@ WantedBy=timers.target
 ./certx.sh cert mycert post_hook "systemctl reload nginx"
 ```
 
-**DNS hooks**
-```bash
-# Available: cloudflare, digitalocean, linode, zone.eu
-curl -O certx.sh/dns-PROVIDER.sh && chmod +x dns-PROVIDER.sh
-./certx.sh domain example.com dns PROVIDER YOUR-API-TOKEN
-```
-
 **Retry failed orders:**
 Failed orders leave a order file, that can retried
 ```bash
@@ -151,38 +147,27 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 ## Commands
 
 ```bash
-# Domains
-domain <name> dns manual|PROVIDER TOKEN
-domain <name> http /webroot
-domain <name> drop
-domain                             # list all
-
-# IP addresses
-ip <addr> http /webroot
-ip <addr> drop
-ip                                 # list all
-
-# Certificates
-cert <name> <domains,ips>          # set identifiers
-cert <name> order
-cert <name> key_path <paths>       # local, ssh://, or ftp://
-cert <name> crt_path <paths>
-cert <name> post_hook <command>
-cert <name> drop
-cert                               # list all
-
-# Renewal
-renew-all [days]                   # default: 15 days
-retry <order-file>                 # retry failed order
-
-# Account
-account-rollover                   # change account key
-account-deactivate                 # deactivate account
-authz-deactivate <url>             # deactivate authorization
-ca-reset                           # delete all CA configuration
-
-# Help
-help [topic]
+#-   domain                                     - list configured domains
+#-   domain [name] [dns|http] [opts]..          - configure domain validation
+#-   domain [name] drop                         - remove domain configuration
+#-   ip                                         - list configured IPs
+#-   ip [addr] http [opts]..                    - configure IP validation
+#-   ip [addr] drop                             - remove IP configuration
+#-   cert                                       - list created certificates
+#-   cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
+#-   cert [name] [key_path|crt_path] [paths,..]
+#-   cert [name] post_hook [cmd]                - commands to run after cert deployment
+#-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
+#-   cert [name] order                          - order and deploy named cert
+#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10)
+#-   cert [name] drop                           - remove cert configuration
+#-   account-rollover                           - change account key
+#-   account-deactivate                         - deactivate account
+#-   authz-deactivate [url]                     - deactivate authorization
+#-   ca-reset                                   - delete all CA/account configuration
+#-   renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
+#-   retry [order-file]                         - retry failed order
+#-   help [topic]
 ```
 
 ## License

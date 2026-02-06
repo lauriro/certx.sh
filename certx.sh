@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.5 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.6 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -18,6 +18,7 @@
 #-   cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
 #-   cert [name] [key_path|crt_path] [paths,..]
 #-   cert [name] post_hook [cmd]                - commands to run after cert deployment
+#-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
 #-   cert [name] order                          - order and deploy named cert
 #-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10)
 #-   cert [name] drop                           - remove cert configuration
@@ -73,7 +74,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.5' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.6' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -130,7 +131,7 @@ hexB64() {
 	printf %b "$(printf '\\%03o' $(sed 's/../0x& /g'))" | b64url
 }
 json() { # [key] [file] [section-matcher]
-	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed 's/{/\n{/g' | sed -n "/${3-.}/p" | sed -n 's/.*"'"$1"'":\("[^"]\{1,\}"\|\[[^]]\{1,\}\]\|[[:alnum:]]*\).*/\1/p' | sed 's/","/\n/g;s/[]["]//g')
+	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed 's/{/\n{/g' | sed -n "/${3:-.}/p" | sed -n 's/.*"'"$1"'":\("[^"]\{1,\}"\|\[[^]]\{1,\}\]\|[[:alnum:]]*\).*/\1/p' | sed 's/","/\n/g;s/[]["]//g')
 	[ -n "$_VAL" ] && printf '%s\n' "$_VAL"
 }
 sign() { # [URL] [PAYLOAD] [JWK] [KEY]
@@ -330,6 +331,16 @@ order() {
 		valid)
 			log "Downloading certificate: $FILE.crt"
 			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
+
+			set -- $(sed '/rel="alternate"/!d;s/.*<\|>.*//g' _res)
+			[ $# -gt 0 ] && ALT="1-$#" && {
+				log "Alternate chains available (${ALT%-1}):$(printf '\n - %s' "$@")"
+				ALT=$(conf_get "cert $FILE chain") && shift $((ALT-1)) 2>/dev/null && {
+					log "Downloading alternate certificate $ALT: $1"
+					req "$1" '' >_res || die 'Alternate certificate download failed'
+				}
+			}
+
 			sed '1,/^$/d' _res >"$FILE.crt"
 			conf_set "cert $FILE b64" "$(openssl x509 -in "$FILE.crt" -outform DER 2>/dev/null | b64url)"
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
@@ -384,7 +395,7 @@ case "$1.$3" in
 cert.order|cert.renew)
 	order "$2"
 	;;
-cert.end|cert.key|cert.key_path|cert.crt_path|cert.post_hook)
+cert.chain|cert.end|cert.key|cert.key_path|cert.crt_path|cert.post_hook)
 	K="$1 $2 $3"
 	shift 3
 	conf_set "$K" "$*"

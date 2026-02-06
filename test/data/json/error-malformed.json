@@ -1,0 +1,5 @@
+{
+  "detail": "Invalid or unrecognized host.",
+  "request_id": "5dbQcEtLwfWYdqMmqvcEMA",
+  "type": "urn:ietf:params:acme:error:malformed"
+}

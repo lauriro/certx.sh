@@ -1,0 +1,17 @@
+{
+  "keyChange": "https://acme.example.com/acme/key-change",
+  "meta": {
+    "caaIdentities": ["example.com"],
+    "profiles": {
+      "classic": "https://example.com/docs/profiles#classic",
+      "shortlived": "https://example.com/docs/profiles#shortlived"
+    },
+    "termsOfService": "https://example.com/documents/LE-SA-v1.6-August-18-2025.pdf",
+    "website": "https://example.com/docs/staging-environment/"
+  },
+  "newAccount": "https://acme.example.com/acme/new-acct",
+  "newNonce": "https://acme.example.com/acme/new-nonce",
+  "newOrder": "https://acme.example.com/acme/new-order",
+  "renewalInfo": "https://acme.example.com/acme/renewal-info",
+  "revokeCert": "https://acme.example.com/acme/revoke-cert"
+}

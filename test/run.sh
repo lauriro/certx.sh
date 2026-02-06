@@ -2,7 +2,7 @@
 # Run './test/run.sh up' to generate snapshots
 
 export BIN=$(cd ${0%/*}/..;pwd)
-export CMD="${CMD:-$BIN/certx.sh}"
+export CMD="${CMD:-$BIN/certx.sh}" SNAP=$BIN/test/snap/run
 export SEQ CERTX_PID=1000 USER=tester
 . ${0%/*}/assert.sh
 

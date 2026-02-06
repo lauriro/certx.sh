@@ -1,0 +1,5 @@
+{
+  "type": "urn:ietf:params:acme:error:unauthorized",
+  "detail": "Unknown external account binding (EAB) key. This may be due to the EAB key expiring which occurs 7 days after creation.",
+  "requestID": "Z8HVm7eBrm_bBmRAK5134A"
+}

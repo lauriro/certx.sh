@@ -1,0 +1,15 @@
+{
+  "status": "ready",
+  "expires": "2026-02-05T23:43:45Z",
+  "identifiers": [
+    {"type": "dns", "value": "a.example.com"},
+    {"type": "ip", "value": "192.0.2.1"}
+  ],
+  "authorizations": [
+    "https://acme.example.com/acme/authz/53711343/15454613",
+    "https://acme.example.com/acme/authz/53711343/14546173"
+  ],
+  "finalize": "https://acme.example.com/acme/finalize/53711343/31503928493",
+  "profile": "shortlived",
+  "replaces": "3tpCJfI0wCebZhbPZWqQrCHVMIc.LHNaiCcvW_ceSN-41wCCm6ft"
+}

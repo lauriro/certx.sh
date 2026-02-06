@@ -1,0 +1,6 @@
+{
+  "type": "dns-01",
+  "url": "https://acme.example.com/acme/chall/53711343/15454613/jg9mJA",
+  "status": "pending",
+  "token": "1MNqxi9iNuGNNNgZDLopRlZExwATGqpxdtSaknTjOuE"
+}

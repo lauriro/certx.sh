@@ -1,0 +1,28 @@
+{
+  "identifier": {
+    "type": "dns",
+    "value": "a.example.com"
+  },
+  "status": "pending",
+  "expires": "2026-02-05T23:43:45Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme.example.com/acme/chall/53711343/15454613/3m1Jdw",
+      "status": "pending",
+      "token": "1MNqxi9iNuGNNNgZDLopRlZExwATGqpxdtSaknTjOuE"
+    },
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme.example.com/acme/chall/53711343/15454613/X9kT-w",
+      "status": "pending",
+      "token": "1MNqxi9iNuGNNNgZDLopRlZExwATGqpxdtSaknTjOuE"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme.example.com/acme/chall/53711343/15454613/jg9mJA",
+      "status": "pending",
+      "token": "1MNqxi9iNuGNNNgZDLopRlZExwATGqpxdtSaknTjOuE"
+    }
+  ]
+}
