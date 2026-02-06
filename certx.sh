@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.4 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.5 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -73,7 +73,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.4' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.5' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -109,11 +109,12 @@ conf_set() {
 conf_find() {
 	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
 }
+ask() {
+	printf '\n%b: ' "$1" >&2
+	read -r R && [ -n "$R" ] && printf '%s' "$R"
+}
 conf_ask() {
-	conf_has "$1" || {
-		printf '\n%b: ' "$2" >&2
-		read -r R && [ -n "$R" ] && conf_set "$1" "$R"
-	}
+	conf_has "$1" || conf_set "$1" "$(ask "$1")"
 }
 b64url() {
 	openssl base64 | tr '/+' '_-' | tr -d '=\n'
@@ -171,22 +172,22 @@ get_kid() {
 	conf_has _kid || {
 		log 'Registering account'
 		JWK=$(jwk _key)
-		conf_set _jwk "$JWK"
-		conf_set _thumb "$(shaB64 "$JWK")"
 		EMAIL=$(conf_get _email) && EMAIL=',"contact":["mailto:'"$EMAIL"'"]' ||:
 		EAB=''
 		[ "$(json externalAccountRequired)" = "true" ] && {
 			log 'External Account Binding required!' eab
-			conf_ask _kid 'EAB key ID'
-			conf_ask _mac 'EAB HMAC'
-			PROTECTED=$(printf '{"alg":"HS256","kid":"%s","url":"%s"}' "$(conf_get _kid)" "$(json newAccount)" | b64url)
+			EKEY=$(ask 'EAB key ID')
+			EMAC=$(ask 'EAB HMAC')
+			PROTECTED=$(printf '{"alg":"HS256","kid":"%s","url":"%s"}' "$EKEY" "$(json newAccount)" | b64url)
 			PAYLOAD=$(printf %s "$JWK" | b64url)
-			HEX=$(b64dec "$(conf_get _mac)" | od -An -tx1 | tr -d ' \n')
+			HEX=$(b64dec "$EMAC" | od -An -tx1 | tr -d ' \n')
 			SIG=$(printf %s.%s "$PROTECTED" "$PAYLOAD" | openssl mac -digest sha256 -macopt "hexkey:$HEX" -binary HMAC | b64url)
 			EAB=',"externalAccountBinding":{"protected":"'$PROTECTED'","payload":"'$PAYLOAD'","signature":"'$SIG'"}'
 		}
 		req "$(json newAccount)" '{"termsOfServiceAgreed":true'"${EMAIL}${EAB}}" '"jwk":'"$JWK" >_res || die 'Registration failed'
 		conf_set _kid "$(sed -n 's/^location: *//pi' _res)"
+		conf_set _jwk "$JWK"
+		conf_set _thumb "$(shaB64 "$JWK")"
 	}
 	ARI=$(json renewalInfo ||:)
 	KID='"kid":"'$(conf_get _kid)'"'
@@ -375,8 +376,7 @@ trap 'cleanup; rm -f _dir _auth _challenge _key _pub _order _cleanup _newkey _re
 
 CA=$(conf_get _ca) || {
 	log 'No CA configured' ca
-	printf "CA directory URL: " >&2
-	read -r CA && conf_set _ca "$CA"
+	CA=$(ask 'CA directory URL') && conf_set _ca "$CA"
 	conf_ask _email 'Account email (optional)'
 }
 
