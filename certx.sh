@@ -114,7 +114,7 @@ conf_find() {
 	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
 }
 conf_ask() {
-	conf_has "$1" || conf_set "$1" "$(ask "$1")"
+	conf_has "$1" || conf_set "$1" "$(ask "$2")"
 }
 b64url() {
 	openssl base64 | tr '/+' '_-' | tr -d '=\n'
