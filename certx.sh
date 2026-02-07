@@ -67,7 +67,7 @@
 #domain-   ./certx.sh ip 203.0.113.1 http ssh://203.0.113.1/www      # IP identifiers only support http-01 validation
 #domain-
 #order-
-#order- In case of error "Could not validate ARI 'replaces' field" - try second time again, ARI is used once.
+#order- In case of error "Could not validate ARI 'replaces' field" - try second time again, 'replaces' is used once.
 #order-
 # shellcheck disable=SC2015 # A && B || C used intentionally
 
