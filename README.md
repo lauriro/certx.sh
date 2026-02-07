@@ -59,12 +59,13 @@ Deploy certs to multiple locations (local, SSH, or FTP):
 
 ```bash
 ./certx.sh cert mycert order              # order new cert ignoring expiry
-./certx.sh renew-all                      # renew all certs via ARI, fallback to 15 days before expiry
-./certx.sh renew-all 30                   # renew all certs via ARI, fallback to 30 days before expiry
+./certx.sh renew-all                      # renew via ARI, fallback to 20% of validity
+./certx.sh renew-all 33%                  # renew at 33% of validity (ignores ARI)
+./certx.sh renew-all 7                    # renew 7 days before expiry (ignores ARI)
 ```
 
 Note: `renew-all` only works for certificates that have been successfully ordered at least once manually using `cert <name> order`.
-If the CA supports ARI (ACME Renewal Information), `renew-all` uses the CA's suggested renewal window instead of the days-based check.
+Without arguments, ARI (ACME Renewal Information) is used if the CA supports it. Explicit days/% overrides ARI.
 
 Cron: /etc/cron.daily/certx
 ```bash
@@ -85,7 +86,7 @@ After=network-online.target
 Type=oneshot
 Environment="CERTX_CONF=/etc/certx/certx.conf"
 Environment="CERTX_LOG=/var/log/certx/certx.log"
-ExecStart=/usr/local/bin/certx.sh renew-all 30
+ExecStart=/usr/local/bin/certx.sh renew-all
 ExecStartPost=/bin/systemctl reload nginx
 ```
 
@@ -165,7 +166,7 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 #-   account-deactivate                         - deactivate account
 #-   authz-deactivate [url]                     - deactivate authorization
 #-   ca-reset                                   - delete all CA/account configuration
-#-   renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
+#-   renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
 #-   retry [order-file]                         - retry failed order
 #-   help [topic]
 ```

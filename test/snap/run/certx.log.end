@@ -5,7 +5,9 @@
 2026-02-05 02:37:27 [1025] tester -- Deleting domain: sub.example.com
 2026-02-05 02:37:28 [1026] tester -- Deleting ip: 203.0.113.1
 2026-02-05 02:37:29 [1027] tester -- Nothing to renew
+2026-02-05 02:37:29 [1027] tester -- ERROR: No domain/ip config for 'end'
 2026-02-05 02:37:30 [1028] tester -- Nothing to renew
+2026-02-05 02:37:30 [1028] tester -- ERROR: No domain/ip config for 'end'
 2026-02-05 02:37:31 [1029] tester -- ERROR: Authorization URL required
 2026-02-05 02:37:32 [1030] tester -- ERROR: Invalid order: 
 2026-02-05 02:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order

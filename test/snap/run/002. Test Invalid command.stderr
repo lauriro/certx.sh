@@ -1,7 +1,7 @@
 
 ERROR: Invalid command!
 
-certx.sh - v26.2.6 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+certx.sh - v26.2.7 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 
 Commands:
   domain                                     - list configured domains
@@ -22,7 +22,7 @@ Commands:
   account-deactivate                         - deactivate account
   authz-deactivate [url]                     - deactivate authorization
   ca-reset                                   - delete all CA/account configuration
-  renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
+  renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
   retry [order-file]                         - retry failed order
   help [topic]
 

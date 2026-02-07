@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.6 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.7 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -26,7 +26,7 @@
 #-   account-deactivate                         - deactivate account
 #-   authz-deactivate [url]                     - deactivate authorization
 #-   ca-reset                                   - delete all CA/account configuration
-#-   renew-all [days]                           - renew via ARI, fallback to [days] before expiry (default: 15)
+#-   renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
 #-   retry [order-file]                         - retry failed order
 #-   help [topic]
 #-
@@ -74,7 +74,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.6' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.7' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -346,6 +346,7 @@ order() {
 			EXP=$(openssl x509 -noout -enddate -in "$FILE.crt" | cut -d= -f2)
 			log "Expires: $EXP ($(($(seconds_to "$EXP")/86400)) days)"
 			conf_set "cert $FILE end" "$EXP"
+			conf_set "cert $FILE len" "$(seconds_to "$EXP")"
 
 			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
 			[ -z "$AKI" ] || {
@@ -395,7 +396,7 @@ case "$1.$3" in
 cert.order|cert.renew)
 	order "$2"
 	;;
-cert.chain|cert.end|cert.key|cert.key_path|cert.crt_path|cert.post_hook)
+cert.chain|cert.key_path|cert.crt_path|cert.post_hook)
 	K="$1 $2 $3"
 	shift 3
 	conf_set "$K" "$*"
@@ -462,9 +463,10 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	RENEW=$(IFS=$NL; for C in $(conf_find cert end); do
-		DUE=$((${2:-15}*86400)) END=${C##*= } NAME=${C%% =*}
-		ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
+	RENEW=$(IFS=$NL;R=${2:-20%};for C in $(conf_find cert end);do
+		END=${C##*= } NAME=${C%% =*}
+		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
+		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
 			# Stored ARI start reached - renew
 			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
