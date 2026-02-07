@@ -20,7 +20,7 @@
 #-   cert [name] post_hook [cmd]                - commands to run after cert deployment
 #-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
 #-   cert [name] order                          - order and deploy named cert
-#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10)
+#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                           - remove cert configuration
 #-   account-rollover                           - change account key
 #-   account-deactivate                         - deactivate account
@@ -405,9 +405,9 @@ cert.revoke)
 	get_kid
 	URL=$(json revokeCert) || die 'No revokeCert URL'
 	B64=$(conf_get "cert $2 b64") || die "No cert $2 in base64 format"
-	{ [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
+	[ -z "$4" ] || { [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
 	log "Revoking certificate $2"
-	req "$URL" '{"certificate":"'"$B64"'","reason":'"$4"'}'>_res || die 'Revoke failed'
+	req "$URL" '{"certificate":"'"$B64"'","reason":'"${4:-0}"'}'>_res || die 'Revoke failed'
 	log 'Revoke DONE'
 	;;
 domain.drop|cert.drop|ip.drop)

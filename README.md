@@ -160,7 +160,7 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 #-   cert [name] post_hook [cmd]                - commands to run after cert deployment
 #-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
 #-   cert [name] order                          - order and deploy named cert
-#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10)
+#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                           - remove cert configuration
 #-   account-rollover                           - change account key
 #-   account-deactivate                         - deactivate account
