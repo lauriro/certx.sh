@@ -27,7 +27,7 @@ set -- lib
 . ./certx.sh
 
 api() {
-	curl -fs --retry 30 --retry-connrefused -H "Authorization: Bearer $AUTH" -H 'Content-Type: application/json' "$@"
+	curl -fs --retry 10 --retry-connrefused -H "Authorization: Bearer $AUTH" -H 'Content-Type: application/json' "$@"
 }
 
 DATA='{"type":"TXT","name":"'"${RR%."$DOMAIN"}"'","data":"'"$VAL"'","ttl":120}'
@@ -39,4 +39,4 @@ api -X POST --data "$DATA" "$API" >_res || {
 RID=$(json id _res '"type":"TXT"') || die "No id for TXT record"
 
 # Send cleanup commands to FD 3
->&3 printf "curl -fs --retry 30 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$RID"
+>&3 printf "curl -fs --retry 5 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$RID"

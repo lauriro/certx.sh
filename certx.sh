@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.7 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.8 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -69,12 +69,11 @@
 #order-
 #order- In case of error "Could not validate ARI 'replaces' field" - try second time again, 'replaces' is used once.
 #order-
-# shellcheck disable=SC2015 # A && B || C used intentionally
 
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.2.7' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.2.8' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NL='
 '
 
@@ -146,7 +145,7 @@ req() {
 		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce'
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
-	RES=$(curl -si -A "$UA" --retry 30 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
+	RES=$(curl -si -A "$UA" --retry 10 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
 	CODE=$(printf %s "${RES#* }500" | head -n1)
 	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || { printf '%s\n' "$RES" >&2; false; }
@@ -332,6 +331,7 @@ order() {
 			log "Downloading certificate: $FILE.crt"
 			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
 
+			# shellcheck disable=SC2046 # Intentionally split
 			set -- $(sed '/rel="alternate"/!d;s/.*<\|>.*//g' _res)
 			[ $# -gt 0 ] && ALT="1-$#" && {
 				log "Alternate chains available (${ALT%-1}):$(printf '\n - %s' "$@")"
@@ -492,7 +492,6 @@ retry.)
 	usage "${2}"
 	;;
 esac
-
 
 # <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link href="themes/prism.css" rel="stylesheet"><script src="prism.js"></script>
 # <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "37416beff4f94535b73c513688552327"}'></script>
