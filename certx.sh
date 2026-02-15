@@ -215,7 +215,7 @@ deploy_file() {
 			;;
 		ftps?://*)
 			curl -sS -T "$1" "$TARGET"
-			[ -z "$3" ] || printf 'curl -sS "%s://%s" -Q "DELE %s"\n' "${TARGET%%://*}" "${P%%/*}" "'/${P#*/}'" >>_cleanup
+			[ -z "$3" ] || printf 'curl -sS "%s://%s" -Q "DELE /%s"\n' "${TARGET%%://*}" "${P%%/*}" "${P#*/}" >>_cleanup
 			;;
 		file://*|/*)
 			cat "$1" >"$P"
