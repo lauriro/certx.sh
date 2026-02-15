@@ -74,7 +74,7 @@
 
 umask 077
 export LC_ALL=C UA='certx.sh/26.2.8' CERTX_CONF CERTX_LOG
-NOW=$(date +%s) ARI='' KID='' NL='
+NOW=$(date +%s) ARI='' KID='' NONCE='' NL='
 '
 
 usage() {
