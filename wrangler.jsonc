@@ -2,10 +2,10 @@
 	"name": "certx-sh",
 	"compatibility_date": "2025-10-24",
 	"assets": {
-		"directory": "./"
+		"directory": "./public/"
 	},
 	"build": {
-		"command": "cp certx.sh index.html"
+		"command": "cp certx.sh public/index.html"
 	},
 	"observability": {
 		"enabled": true
