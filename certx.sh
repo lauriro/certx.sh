@@ -493,5 +493,5 @@ retry.)
 	;;
 esac
 
-# <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link href="themes/prism.css" rel="stylesheet"><script src="prism.js"></script>
+# <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link href="prism.css" rel="stylesheet"><script src="prism.js"></script>
 # <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "37416beff4f94535b73c513688552327"}'></script>
