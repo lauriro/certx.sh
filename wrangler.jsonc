@@ -5,7 +5,7 @@
 		"directory": "./public/"
 	},
 	"build": {
-		"command": "cp certx.sh public/index.html"
+		"command": "cp certx.sh public/index.html;cp MIT-LICENSE.txt public/"
 	},
 	"observability": {
 		"enabled": true

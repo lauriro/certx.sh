@@ -1,5 +1,6 @@
+                     https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
+certx.sh - v26.2.9 - Simple ACME client for green certificates.
 
-certx.sh - v26.2.9 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 
 Commands:
   domain                                         - list configured domains
