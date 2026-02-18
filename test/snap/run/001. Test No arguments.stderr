@@ -1,31 +1,32 @@
 
-certx.sh - v26.2.8 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+certx.sh - v26.2.9 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 
 Commands:
-  domain                                     - list configured domains
-  domain [name] [dns|http] [opts]..          - configure domain validation
-  domain [name] drop                         - remove domain configuration
-  ip                                         - list configured IPs
-  ip [addr] http [opts]..                    - configure IP validation
-  ip [addr] drop                             - remove IP configuration
-  cert                                       - list created certificates
-  cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
+  domain                                         - list configured domains
+  domain [name] [dns|dns-persist|http] [opts]..  - configure domain validation
+  domain [name] drop                             - remove domain configuration
+  ip                                             - list configured IPs
+  ip [addr] http [opts]..                        - configure IP validation
+  ip [addr] drop                                 - remove IP configuration
+  cert                                           - list created certificates
+  cert [name] [domain,..] [profile]              - configure cert domains and optional CA profile (eg. shortlived)
   cert [name] [key_path|crt_path] [paths,..]
-  cert [name] post_hook [cmd]                - commands to run after cert deployment
-  cert [name] chain [N]                      - set alternate cert positional index (1-..)
-  cert [name] order                          - order and deploy named cert
-  cert [name] revoke [reason]                - revoke certificate (reason: 0-10, default: 0)
-  cert [name] drop                           - remove cert configuration
-  account-rollover                           - change account key
-  account-deactivate                         - deactivate account
-  authz-deactivate [url]                     - deactivate authorization
-  ca-reset                                   - delete all CA/account configuration
-  renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
-  retry [order-file]                         - retry failed order
+  cert [name] post_hook [cmd]                    - commands to run after cert deployment
+  cert [name] chain [N]                          - set alternate cert positional index (1-..)
+  cert [name] order                              - order and deploy named cert
+  cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
+  cert [name] drop                               - remove cert configuration
+  account-rollover                               - change account key
+  account-deactivate                             - deactivate account
+  authz-deactivate [url]                         - deactivate authorization
+  ca-reset                                       - delete all CA/account configuration
+  renew-all [days|%]                             - renew via ARI or days/% of validity (default: ARI, 20%)
+  retry [order-file]                             - retry failed order
   help [topic]
 
 Examples:
   ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+  ./certx.sh domain example.com dns-persist wildcard
   ./certx.sh cert mycert 'example.com,*.example.com'
   ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
   ./certx.sh cert mycert order

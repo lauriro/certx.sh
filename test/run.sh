@@ -153,6 +153,30 @@ Test "Order with DNS challenge" cert dnscert order
 
 Check "certx.conf" ".dns" "$FILTER_CONF"
 Check "certx.log" ".dns"
+# --- Test order with DNS-PERSIST-01 challenge ---
+export MOCK_TEST=persist
+rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized
+
+# Set up domain with persist validation
+$CMD domain persist.example.com dns-persist 2>/dev/null
+
+Test "Add cert for persist challenge" cert persistcert persist.example.com
+
+# Set MOCK_DNS_PERSIST_TXT to match issuer-domain-name so wait_dns succeeds
+export MOCK_DNS_PERSIST_TXT='"mock.acme; accounturi=https://mock.acme/acct/1"'
+
+# Pipe 'y' to stdin to answer the "Done?" prompt on first order
+echo y | Test "Order with persist challenge" cert persistcert order
+
+Check "certx.conf" ".persist" "$FILTER_CONF"
+Check "certx.log" ".persist"
+
+# Second order should reuse stored record (no prompt)
+rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized
+
+Test "Order with stored persist record" cert persistcert order
+
+Check "certx.log" ".persist-reuse"
 # --- Test account rollover ---
 export MOCK_TEST=""
 

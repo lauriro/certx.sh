@@ -11,7 +11,9 @@ case "$URL" in
 	cat "$FILE"
 	;;
 */new-order)
-	if [ "$MOCK_TEST" = "dns" ]; then
+	if [ "$MOCK_TEST" = "persist" ]; then
+		cat "$RESP/new-order-persist"
+	elif [ "$MOCK_TEST" = "dns" ]; then
 		cat "$RESP/new-order-dns"
 	elif [ "$MOCK_TEST" = "pending" ]; then
 		cat "$RESP/new-order-pending"
@@ -20,7 +22,13 @@ case "$URL" in
 	fi
 	;;
 */authz/*)
-	if [ "$MOCK_TEST" = "dns" ]; then
+	if [ "$MOCK_TEST" = "persist" ]; then
+		if [ -f "$MOCK_STATE/auth-challenged" ]; then
+			cat "$RESP/authz-persist-valid"
+		else
+			cat "$RESP/authz-persist-pending"
+		fi
+	elif [ "$MOCK_TEST" = "dns" ]; then
 		if [ -f "$MOCK_STATE/auth-challenged" ]; then
 			cat "$RESP/authz-dns-valid"
 		else

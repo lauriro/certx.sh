@@ -34,11 +34,22 @@
 2026-02-05 02:37:40 [1038] tester -- Sending CSR
 2026-02-05 02:37:40 [1038] tester -- Downloading certificate: dnscert.crt
 2026-02-05 02:37:40 [1038] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 02:37:41 [1039] tester -- Rolling over account key
-2026-02-05 02:37:41 [1039] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:41 [1039] tester -- Creating key '_newkey'
-2026-02-05 02:37:41 [1039] tester -- Account key rollover completed
-2026-02-05 02:37:42 [1040] tester -- Deactivating account
 2026-02-05 02:37:42 [1040] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:42 [1040] tester -- Account deactivated successfully
-2026-02-05 02:37:43 [1041] tester -- Deleting all CA configuration
+2026-02-05 02:37:42 [1040] tester -- Order persistcert: persist.example.com
+2026-02-05 02:37:42 [1040] tester -- Creating key 'persistcert.key'
+2026-02-05 02:37:42 [1040] tester -- Sending CSR
+2026-02-05 02:37:42 [1040] tester -- Downloading certificate: persistcert.crt
+2026-02-05 02:37:42 [1040] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:42 [1040] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:42 [1040] tester -- Order persistcert: persist.example.com
+2026-02-05 02:37:42 [1040] tester -- Sending CSR
+2026-02-05 02:37:42 [1040] tester -- Downloading certificate: persistcert.crt
+2026-02-05 02:37:42 [1040] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:43 [1041] tester -- Rolling over account key
+2026-02-05 02:37:43 [1041] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:43 [1041] tester -- Creating key '_newkey'
+2026-02-05 02:37:43 [1041] tester -- Account key rollover completed
+2026-02-05 02:37:44 [1042] tester -- Deactivating account
+2026-02-05 02:37:44 [1042] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:44 [1042] tester -- Account deactivated successfully
+2026-02-05 02:37:45 [1043] tester -- Deleting all CA configuration

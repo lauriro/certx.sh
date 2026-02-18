@@ -1,0 +1,6 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order persistcert: persist.example.com
+Creating key 'persistcert.key'
+Sending CSR
+Downloading certificate: persistcert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)

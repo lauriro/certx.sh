@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-
-#- certx.sh - v26.2.8 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
+#- certx.sh - v26.2.9 - Simple ACME client for green certificates. https://github.com/lauriro/certx.sh
 #
 #  Install:
 #    curl -JO certx.sh
@@ -8,30 +8,31 @@
 #    ./certx.sh
 #-
 #- Commands:
-#-   domain                                     - list configured domains
-#-   domain [name] [dns|http] [opts]..          - configure domain validation
-#-   domain [name] drop                         - remove domain configuration
-#-   ip                                         - list configured IPs
-#-   ip [addr] http [opts]..                    - configure IP validation
-#-   ip [addr] drop                             - remove IP configuration
-#-   cert                                       - list created certificates
-#-   cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
+#-   domain                                         - list configured domains
+#-   domain [name] [dns|dns-persist|http] [opts]..  - configure domain validation
+#-   domain [name] drop                             - remove domain configuration
+#-   ip                                             - list configured IPs
+#-   ip [addr] http [opts]..                        - configure IP validation
+#-   ip [addr] drop                                 - remove IP configuration
+#-   cert                                           - list created certificates
+#-   cert [name] [domain,..] [profile]              - configure cert domains and optional CA profile (eg. shortlived)
 #-   cert [name] [key_path|crt_path] [paths,..]
-#-   cert [name] post_hook [cmd]                - commands to run after cert deployment
-#-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
-#-   cert [name] order                          - order and deploy named cert
-#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10, default: 0)
-#-   cert [name] drop                           - remove cert configuration
-#-   account-rollover                           - change account key
-#-   account-deactivate                         - deactivate account
-#-   authz-deactivate [url]                     - deactivate authorization
-#-   ca-reset                                   - delete all CA/account configuration
-#-   renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
-#-   retry [order-file]                         - retry failed order
+#-   cert [name] post_hook [cmd]                    - commands to run after cert deployment
+#-   cert [name] chain [N]                          - set alternate cert positional index (1-..)
+#-   cert [name] order                              - order and deploy named cert
+#-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
+#-   cert [name] drop                               - remove cert configuration
+#-   account-rollover                               - change account key
+#-   account-deactivate                             - deactivate account
+#-   authz-deactivate [url]                         - deactivate authorization
+#-   ca-reset                                       - delete all CA/account configuration
+#-   renew-all [days|%]                             - renew via ARI or days/% of validity (default: ARI, 20%)
+#-   retry [order-file]                             - retry failed order
 #-   help [topic]
 #-
 #- Examples:
 #-   ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
+#-   ./certx.sh domain example.com dns-persist wildcard
 #-   ./certx.sh cert mycert 'example.com,*.example.com'
 #-   ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
 #-   ./certx.sh cert mycert order
@@ -257,14 +258,29 @@ get_domain() {
 
 challenge() {
 	NAME=$(json value _auth) || die 'No identifier in authorization'
-	RR="_acme-challenge.$NAME"
 	DOMAIN=$(get_domain "$NAME")
 	log "Authorization $NAME: $1"
 	# shellcheck disable=SC2046 # Intentionally split into positional params
 	set -- $(conf_get "domain $DOMAIN" || conf_get "ip $DOMAIN")
-	TOK=$(json token _auth '"type":"'"$1"'-01"') || die 'No challenge token'
-	THUMB=$(conf_get _thumb)
-	VAL=$(shaB64 "$TOK.$THUMB")
+	case "$1" in
+	dns-persist)
+		RR="_validation-persist.$NAME"
+		VAL=$(conf_get "domain $DOMAIN persist") || {
+			VAL=$(json issuer-domain-names _auth '"type":"dns-persist-01"') || die 'CA do not support dns-persist'
+			VAL="${VAL%%$NL*}; accounturi=$(conf_get _kid)${2:+"; policy=wildcard"}${3:+"; persistUntil=$3"}"
+			printf 'Add DNS record: %s TXT="%s"\nDone? ' "$RR" "$VAL"
+			read -r _
+			conf_set "domain $DOMAIN persist" "$VAL"
+		}
+		wait_dns "$DOMAIN" "$RR" "${VAL%%;*}"
+		;;
+	*)
+		RR="_acme-challenge.$NAME"
+		TOK=$(json token _auth '"type":"'"$1"'-01"') || die 'No challenge token'
+		THUMB=$(conf_get _thumb)
+		VAL=$(shaB64 "$TOK.$THUMB")
+		;;
+	esac
 
 	case "$1.$2" in
 	dns.manual)
@@ -418,7 +434,7 @@ ca-reset.)
 	log 'Deleting all CA configuration'
 	conf_set "_" '' '[^=]*'
 	;;
-cert.?*|domain.dns|domain.http|ip.http)
+cert.?*|domain.dns|domain.http|domain.dns-persist|ip.http)
 	[ "$1" != cert ] || (IFS=,;for N in $3; do get_domain "$N"; done >/dev/null)
 	K="$1 $2"
 	shift 2
