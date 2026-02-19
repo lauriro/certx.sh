@@ -1,5 +1,8 @@
 CA: https://acme-staging-v02.api.letsencrypt.org/directory
 Order pendingcert: example.com
+Authorization example.com: https://mock.acme/authz/2
+Deploying _challenge to /tmp/certx-test/webroot/.well-known/acme-challenge/mock-token-123
 Creating key 'pendingcert.key'
 Downloading certificate: pendingcert.crt
 Expires: May  1 22:09:24 2026 GMT (85 days)
+Cleanup challenges

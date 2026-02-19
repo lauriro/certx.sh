@@ -1,5 +1,8 @@
 CA: https://acme-staging-v02.api.letsencrypt.org/directory
 Order persistcert: persist.example.com
+Authorization persist.example.com: https://mock.acme/authz/4
+Waiting for DNS propagation _validation-persist.persist.example.com
+  OK (2s)
 Creating key 'persistcert.key'
 Sending CSR
 Downloading certificate: persistcert.crt

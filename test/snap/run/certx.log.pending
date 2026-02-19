@@ -24,6 +24,9 @@
 2026-02-05 02:37:36 [1034] tester -- Revoke DONE
 2026-02-05 02:37:38 [1036] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:38 [1036] tester -- Order pendingcert: example.com
+2026-02-05 02:37:38 [1036] tester -- Authorization example.com: https://mock.acme/authz/2
+2026-02-05 02:37:38 [1036] tester -- Deploying _challenge to /tmp/certx-test/webroot/.well-known/acme-challenge/mock-token-123
 2026-02-05 02:37:38 [1036] tester -- Creating key 'pendingcert.key'
 2026-02-05 02:37:38 [1036] tester -- Downloading certificate: pendingcert.crt
 2026-02-05 02:37:38 [1036] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:38 [1036] tester -- Cleanup challenges

@@ -24,24 +24,37 @@
 2026-02-05 02:37:36 [1034] tester -- Revoke DONE
 2026-02-05 02:37:38 [1036] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:38 [1036] tester -- Order pendingcert: example.com
+2026-02-05 02:37:38 [1036] tester -- Authorization example.com: https://mock.acme/authz/2
+2026-02-05 02:37:38 [1036] tester -- Deploying _challenge to /tmp/certx-test/webroot/.well-known/acme-challenge/mock-token-123
 2026-02-05 02:37:38 [1036] tester -- Creating key 'pendingcert.key'
 2026-02-05 02:37:38 [1036] tester -- Downloading certificate: pendingcert.crt
 2026-02-05 02:37:38 [1036] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
-2026-02-05 02:37:38 [1036] tester -- ERROR: No executable DNS validation hook!
+2026-02-05 02:37:38 [1036] tester -- Cleanup challenges
 2026-02-05 02:37:40 [1038] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:40 [1038] tester -- Order dnscert: dns.example.com
+2026-02-05 02:37:40 [1038] tester -- Authorization dns.example.com: https://mock.acme/authz/3
+2026-02-05 02:37:40 [1038] tester -- Running hook: cloudflare
+2026-02-05 02:37:40 [1038] tester -- Waiting for DNS propagation _acme-challenge.dns.example.com
+2026-02-05 02:37:40 [1038] tester --   OK (2s)
 2026-02-05 02:37:40 [1038] tester -- Creating key 'dnscert.key'
 2026-02-05 02:37:40 [1038] tester -- Sending CSR
 2026-02-05 02:37:40 [1038] tester -- Downloading certificate: dnscert.crt
 2026-02-05 02:37:40 [1038] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
+2026-02-05 02:37:40 [1038] tester -- Cleanup challenges
 2026-02-05 02:37:42 [1040] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:42 [1040] tester -- Order persistcert: persist.example.com
+2026-02-05 02:37:42 [1040] tester -- Authorization persist.example.com: https://mock.acme/authz/4
+2026-02-05 02:37:42 [1040] tester -- Waiting for DNS propagation _validation-persist.persist.example.com
+2026-02-05 02:37:42 [1040] tester --   OK (2s)
 2026-02-05 02:37:42 [1040] tester -- Creating key 'persistcert.key'
 2026-02-05 02:37:42 [1040] tester -- Sending CSR
 2026-02-05 02:37:42 [1040] tester -- Downloading certificate: persistcert.crt
 2026-02-05 02:37:42 [1040] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
 2026-02-05 02:37:42 [1040] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:42 [1040] tester -- Order persistcert: persist.example.com
+2026-02-05 02:37:42 [1040] tester -- Authorization persist.example.com: https://mock.acme/authz/4
+2026-02-05 02:37:42 [1040] tester -- Waiting for DNS propagation _validation-persist.persist.example.com
+2026-02-05 02:37:42 [1040] tester --   OK (2s)
 2026-02-05 02:37:42 [1040] tester -- Sending CSR
 2026-02-05 02:37:42 [1040] tester -- Downloading certificate: persistcert.crt
 2026-02-05 02:37:42 [1040] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)

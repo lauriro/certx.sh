@@ -1,6 +1,11 @@
 CA: https://acme-staging-v02.api.letsencrypt.org/directory
 Order dnscert: dns.example.com
+Authorization dns.example.com: https://mock.acme/authz/3
+Running hook: cloudflare
+Waiting for DNS propagation _acme-challenge.dns.example.com
+  OK (2s)
 Creating key 'dnscert.key'
 Sending CSR
 Downloading certificate: dnscert.crt
 Expires: May  1 22:09:24 2026 GMT (85 days)
+Cleanup challenges

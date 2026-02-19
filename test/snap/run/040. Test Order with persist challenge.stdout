@@ -1,0 +1,2 @@
+Add DNS record: _validation-persist.persist.example.com TXT="mock.acme; accounturi=https://mock.acme/acct/1"
+Done? 

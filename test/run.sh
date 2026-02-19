@@ -137,6 +137,7 @@ export MOCK_TEST=dns
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized  # Clean mock state from previous tests
 
 # Set up domain with cloudflare DNS challenge
+ln -sf "$BIN/dns-cloudflare.sh" "$BIN/certx.sh" "$TMP/"
 $CMD domain dns.example.com dns cloudflare TESTTOKEN 2>/dev/null
 
 Test "Add cert for DNS challenge" cert dnscert dns.example.com
