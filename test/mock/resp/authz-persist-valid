@@ -1,0 +1,4 @@
+HTTP/1.1 200 OK
+replay-nonce: mock-nonce-016
+
+{"identifier":{"type":"dns","value":"persist.example.com"},"status":"valid","challenges":[{"type":"dns-persist-01","status":"valid","url":"https://mock.acme/chall/persist-1","issuer-domain-names":["mock.acme"]}]}
