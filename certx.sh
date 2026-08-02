@@ -214,7 +214,7 @@ deploy_file() {
 			CLEAN=$(printf 'ssh "%s" "rm %s"' "${P%%/*}" "'/${P#*/}'")
 			ssh "${P%%/*}" "cat > '/${P#*/}'" <"$1"
 			;;
-		ftps?://*)
+		ftp://*|ftps://*)
 			CLEAN=$(printf 'curl -sS "%s://%s" -Q "DELE /%s"' "${TARGET%%://*}" "${P%%/*}" "${P#*/}")
 			curl -sS -T "$1" "$TARGET"
 			;;
