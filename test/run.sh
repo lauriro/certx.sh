@@ -85,9 +85,10 @@ Check "certx.conf"
 Test "Renew-all nothing" renew-all
 
 # Non-expiring cert should not be renewed
-$CMD cert mycert1 end "Dec 31 23:59:59 2099 GMT" 2>/dev/null
+$CMD cert mycert1 end "Dec 31 23:59:59 2099 GMT"
+$CMD cert mycert2 end "Mar 08 12:00:00 2026 GMT"
 Test "Renew-all non-expiring" renew-all
-$CMD cert mycert1 end "" 2>/dev/null
+$CMD cert mycert1 end ""
 
 Fail 1 "authz-deactivate no URL" authz-deactivate
 Fail 1 "retry missing file" retry

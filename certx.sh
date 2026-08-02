@@ -479,7 +479,7 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	RENEW=$(IFS=$NL;R=${2:-20%};for C in $(conf_find cert end);do
+	RENEW=$(IFS=$NL;R=${2:-20%};SKIP='';for C in $(conf_find cert end);do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
 		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
@@ -491,10 +491,12 @@ renew-all.)
 				}
 			}
 		}
-		[ "$(seconds_to "${END:-$DUE}")" -lt "$DUE" ] && printf ' %s' "$NAME" ||:
-	done 2>/dev/null)
-	[ -z "$RENEW" ] && { log 'Nothing to renew'; exit 0; }
-	log "Renewing: $RENEW"
+		LEFT=$(seconds_to "${END:-$DUE}") || continue
+		[ "$LEFT" -lt "$DUE" ] && printf ' %s' "$NAME" || SKIP="$SKIP, $NAME $((LEFT/86400)) days"
+	done 2>/dev/null;printf '\n%s' "${SKIP#, }")
+	SKIP=${RENEW#*$NL} RENEW=${RENEW%%$NL*}
+	[ -z "$RENEW" ] && { log "Nothing to renew${SKIP:+: $SKIP}"; exit 0; }
+	log "Renewing:$RENEW"
 	for CERT in $RENEW; do
 		( order "$CERT" ) || log "Warning: Failed to renew $CERT"
 	done
