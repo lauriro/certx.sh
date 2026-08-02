@@ -55,7 +55,12 @@ case "$URL" in
 	;;
 */order/*)
 	if [ -f "$MOCK_STATE/finalized" ]; then
-		cat "$RESP/order-valid"
+		if [ ! -f "$MOCK_STATE/retry-zero-polled" ]; then
+			touch "$MOCK_STATE/retry-zero-polled"
+			cat "$RESP/order-processing-zero"
+		else
+			cat "$RESP/order-valid"
+		fi
 	else
 		cat "$RESP/order-ready"
 	fi

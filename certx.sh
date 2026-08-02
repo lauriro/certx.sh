@@ -202,7 +202,7 @@ cleanup() {
 }
 seconds_to() {
 	T=$1 && [ -n "$T" ] && {
-		[ "$T" -gt 0 ] || T=$(($(date -d"$T" +%s || date -jf'%b %d %T %Y %Z' "$T" +%s || date -jf'%Y-%m-%dT%H:%M:%SZ' "$T" +%s)-NOW))
+		[ "$T" -ge 0 ] || T=$(($(date -d"$T" +%s || date -jf'%b %d %T %Y %Z' "$T" +%s || date -jf'%Y-%m-%dT%H:%M:%SZ' "$T" +%s)-NOW))
 	} 2>/dev/null && printf '%s\n' "$T"
 }
 deploy_file() {
