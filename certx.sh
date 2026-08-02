@@ -429,7 +429,7 @@ cert.revoke)
 	;;
 domain.drop|cert.drop|ip.drop)
 	log "Deleting $1: $2"
-	conf_set "$1 $2" '' '[^=]*'
+	conf_set "$1 $2" '' '\( [^=]*\)\{0,1\}'
 	;;
 ca-reset.)
 	log 'Deleting all CA configuration'

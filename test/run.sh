@@ -65,7 +65,7 @@ Check "certx.conf"
 Test "Drop cert with profile" cert profilecert drop
 Check "certx.conf"
 
-Test "Add second cert" cert mycert2 sub.example.com
+Test "Add second cert" cert mycert sub.example.com
 Check "certx.conf"
 
 Test "List certs" cert
@@ -73,7 +73,7 @@ Test "List certs" cert
 Test "Overwrite cert domains" cert mycert1 example.com
 Check "certx.conf"
 
-Test "Drop cert" cert mycert2 drop
+Test "Drop cert" cert mycert drop
 Check "certx.conf"
 
 Test "Drop domain" domain sub.example.com drop

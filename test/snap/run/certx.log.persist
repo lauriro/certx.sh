@@ -1,7 +1,7 @@
 2026-02-05 02:37:04 [1002] tester -- ERROR: Invalid command!
 2026-02-05 02:37:13 [1011] tester -- ERROR: No executable DNS validation hook!
 2026-02-05 02:37:22 [1020] tester -- Deleting cert: profilecert
-2026-02-05 02:37:26 [1024] tester -- Deleting cert: mycert2
+2026-02-05 02:37:26 [1024] tester -- Deleting cert: mycert
 2026-02-05 02:37:27 [1025] tester -- Deleting domain: sub.example.com
 2026-02-05 02:37:28 [1026] tester -- Deleting ip: 203.0.113.1
 2026-02-05 02:37:29 [1027] tester -- Nothing to renew
