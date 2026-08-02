@@ -211,19 +211,20 @@ deploy_file() {
 		# shellcheck disable=SC2029 # Client-side expansion of path is intended
 		case "$TARGET" in
 		ssh://*)
+			CLEAN=$(printf 'ssh "%s" "rm %s"' "${P%%/*}" "'/${P#*/}'")
 			ssh "${P%%/*}" "cat > '/${P#*/}'" <"$1"
-			[ -z "$3" ] || printf 'ssh "%s" "rm %s"\n' "${P%%/*}" "'/${P#*/}'" >>_cleanup
 			;;
 		ftps?://*)
+			CLEAN=$(printf 'curl -sS "%s://%s" -Q "DELE /%s"' "${TARGET%%://*}" "${P%%/*}" "${P#*/}")
 			curl -sS -T "$1" "$TARGET"
-			[ -z "$3" ] || printf 'curl -sS "%s://%s" -Q "DELE /%s"\n' "${TARGET%%://*}" "${P%%/*}" "${P#*/}" >>_cleanup
 			;;
 		file://*|/*)
+			CLEAN="rm '$P'"
 			cat "$1" >"$P"
-			[ -z "$3" ] || printf 'rm %s\n' "'$P'" >>_cleanup
 			;;
 		*) false;;
-		esac || die 'Deploy failed'
+		esac || die "Deploy failed: $TARGET"
+		[ -z "$3" ] || printf '%s\n' "$CLEAN" >>_cleanup
 	done
 }
 dns_query() {
