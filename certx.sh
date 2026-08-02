@@ -109,7 +109,8 @@ conf_get() {
 }
 conf_set() {
 	REST="$(_conf "$1" '!p' "$3")"
-	printf '%s\n' "${2:+"$1 = $2"}" "$REST" | sort | sed '/^$/d' >"$CERTX_CONF"
+	printf '%s\n' "${2:+"$1 = $2"}" "$REST" | sort | sed '/^$/d' >"$CERTX_CONF~" &&
+		mv -f "$CERTX_CONF~" "$CERTX_CONF" || die "Cannot write config: $CERTX_CONF"
 }
 conf_find() {
 	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
@@ -396,7 +397,7 @@ order() {
 [ "$1" = lib ] && return 0
 
 # Check dependencies
-has cp curl cut date head od openssl sed sort tail tr || die "Missing command: $CMD"
+has cp curl cut date head mv od openssl sed sort tail tr || die "Missing command: $CMD"
 
 # Touch config file if not writable
 [ -w "$CERTX_CONF" ] || :>"$CERTX_CONF" || die "Cannot create config: $CERTX_CONF"
