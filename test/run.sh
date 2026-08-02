@@ -21,7 +21,7 @@ cd "$TMP"
 echo "Test '$CMD' in '$TMP'"
 
 Test "No arguments"
-Test "Invalid command" invalidcmd
+Fail 1 "Invalid command" invalidcmd
 Test "Help" help
 Test "Help ca" help ca
 Test "Help dns" help dns
@@ -37,7 +37,7 @@ Check "certx.conf"
 Test "Add domain http" domain sub.example.com http /var/www/html
 Check "certx.conf"
 
-Test "Overwrite domain method" domain example.com dns cloudflare MYTOKEN
+Fail 1 "Overwrite domain method" domain example.com dns cloudflare MYTOKEN
 Check "certx.conf"
 
 Test "List domains" domain

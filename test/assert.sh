@@ -74,7 +74,11 @@ assert() {
 	_EXIT=$?
 	Check "$NAME.stderr" ""
 	Check "$NAME.stdout" ""
-	[ "$_EXIT" = "$EXIT" ] ||: LINE="exit status expected:$EXIT actual:$_EXIT\n$ERR"
+	if [ "$_EXIT" != "$EXIT" ]; then
+		LINE="exit status expected:$EXIT actual:$_EXIT\n$ERR"
+		OUT="PASS:%s ${red}${bold}FAIL:%s${reset}"
+		: $((FAIL+=1))
+	fi
 	printf "$LINE $NAME\n"
 
 	[ "$SUB" = "debug" ] && {
