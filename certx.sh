@@ -440,8 +440,8 @@ cert.?*|domain.dns|domain.http|domain.dns-persist|ip.http)
 	[ "$1" != cert ] || (IFS=,;for N in $3; do get_domain "$N"; done >/dev/null)
 	K="$1 $2"
 	shift 2
-	conf_set "$K" "$*"
 	[ "$1" != dns ] || [ "$2" = manual ] || [ -x "./dns-${2}.sh" ] || die 'No executable DNS validation hook!' dns
+	conf_set "$K" "$*"
 	;;
 cert.|domain.|ip.)
 	printf 'List of %ss:\n' "$1"

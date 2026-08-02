@@ -17,4 +17,4 @@ cert testcert b64 = MIIBgDCCASegAwIBAgIUTBT-GYs2yWe65ZZ4sA9_CXtjMQowCgYIKoZIzj0E
 cert testcert end = May  1 22:09:24 2026 GMT
 cert testcert key = MDECAQEEIFi89ZncDvnwLF3XLf_YXhRtyB4dzdlnp55IFs9BgvYboAoGCCqGSM49AwEH
 cert testcert len = 7421509
-domain example.com = dns cloudflare MYTOKEN
+domain example.com = dns manual
