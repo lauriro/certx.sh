@@ -412,7 +412,7 @@ case "$1.$3" in
 cert.order|cert.renew)
 	order "$2"
 	;;
-cert.chain|cert.key_path|cert.crt_path|cert.post_hook)
+cert.chain|cert.end|cert.key_path|cert.crt_path|cert.post_hook)
 	K="$1 $2 $3"
 	shift 3
 	conf_set "$K" "$*"
