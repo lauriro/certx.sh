@@ -275,7 +275,6 @@ challenge() {
 			read -r _
 			conf_set "domain $DOMAIN persist" "$VAL"
 		}
-		wait_dns "$DOMAIN" "$RR" "${VAL%%;*}"
 		;;
 	*)
 		RR="_acme-challenge.$NAME"
@@ -290,13 +289,11 @@ challenge() {
 		printf 'Add DNS record: %s TXT="%s"\nDone? ' "$RR" "$VAL"
 		read -r _
 		printf "echo 'Remove DNS record: %s TXT=\"%s\"'\n" "$RR" "$VAL" >>_cleanup
-		wait_dns "$DOMAIN" "$RR" "$VAL"
 		;;
 	dns.*)
 		[ -x "./dns-${2}.sh" ] || die "Hook $2: not executable" dns
 		log "Running hook: $2"
 		sh "./dns-${2}.sh" "$DOMAIN" "$RR" "$VAL" "$@" >>_cleanup || die "Hook $2 failed"
-		wait_dns "$DOMAIN" "$RR" "$VAL"
 		;;
 	http.*)
 		[ -z "$2" ] && die "Webroot required: domain set $NAME http /var/www/html"
@@ -304,6 +301,7 @@ challenge() {
 		deploy_file "_challenge" "$2/.well-known/acme-challenge/$TOK" cleanup
 		;;
 	esac
+	[ "$1" = http ] || wait_dns "$DOMAIN" "$RR" "${VAL%%;*}"
 	req "$(json url _auth '"type":"'"$1"'-01"')" "{}" >_res || die "Validation Trigger Fail"
 }
 
