@@ -115,8 +115,11 @@
 2026-02-05 00:37:53 [1051] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:53 [1051] tester -- Authorization status: valid
 valid
-2026-02-05 00:37:54 [1052] tester -- Deactivating account
+2026-02-05 00:37:54 [1052] tester -- Deactivating authorization: https://mock.acme/nonexistent
 2026-02-05 00:37:54 [1052] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:37:54 [1052] tester -- Account deactivated successfully
-2026-02-05 00:37:55 [1053] tester -- Deleting all CA configuration
-2026-02-05 00:37:56 [1054] tester -- No CA configured
+2026-02-05 00:37:54 [1052] tester -- ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"} 
+2026-02-05 00:37:55 [1053] tester -- Deactivating account
+2026-02-05 00:37:55 [1053] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 00:37:55 [1053] tester -- Account deactivated successfully
+2026-02-05 00:37:56 [1054] tester -- Deleting all CA configuration
+2026-02-05 00:37:57 [1055] tester -- No CA configured

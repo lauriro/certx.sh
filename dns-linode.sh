@@ -31,7 +31,7 @@ api() {
 }
 
 api "$API" >_res || die "Domain list API failed"
-DOMAIN_ID=$(json id _res "\"domain\":\"$DOMAIN\"") || die "No domain ID for $DOMAIN"
+DOMAIN_ID=$(json id _res "\"domain\":\"$DOMAIN\"") || die "No domain ID for $DOMAIN" '' _res
 
 DATA='{"type":"TXT","name":"'"${RR%."$DOMAIN"}"'","target":"'"$VAL"'","ttl_sec":120}'
 api -X POST --data "$DATA" "$API/$DOMAIN_ID/records" >_res || {
@@ -39,7 +39,7 @@ api -X POST --data "$DATA" "$API/$DOMAIN_ID/records" >_res || {
 	api "$API/$DOMAIN_ID/records" >_res
 } || die "Failed to find TXT record"
 
-RID=$(json id _res '"type":"TXT"') || die "No id for TXT record"
+RID=$(json id _res '"type":"TXT"') || die "No id for TXT record" '' _res
 
 # Send cleanup commands to FD 3
 >&3 printf "curl -fs --retry 5 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$DOMAIN_ID/records/$RID"

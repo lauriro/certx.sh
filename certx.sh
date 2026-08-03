@@ -87,7 +87,7 @@ log() {
 	[ -z "$2" ] || usage "$2"
 }
 die() {
-	log "ERROR: $1" "$2" "$NL"
+	log "ERROR: $1${3:+": $(tr -s '[:cntrl:] ' ' ' <"$3")"}" "$2" "$NL"
 	exit 1
 }
 has() {
@@ -144,13 +144,14 @@ sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 }
 req() {
 	[ $# -gt 1 ] && {
-		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce'
+		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce' '' _res
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
 	RES=$(curl -si -A "$UA" --retry 10 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/^[Rr]eplay-[Nn]once: *//p')
 	CODE="${RES#* }500" CODE=${CODE%%$NL*}
-	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || { printf '%s\n' "$RES" >&2; false; }
+	printf '%s\n' "$RES"
+	[ "${CODE%% *}" -lt 300 ]
 }
 create_key() {
 	log "Creating key '$2'"
@@ -167,7 +168,7 @@ jwk() {
 }
 get_kid() {
 	[ -z "$KID" ] || return
-	req "$CA" >_dir || die "Cannot get CA: $CA"
+	req "$CA" >_dir || die "Cannot get CA: $CA" '' _dir
 	log "CA: $CA"
 	conf_ask _terms "CA Terms of Service: $(json termsOfService)\nAccept? (type YES)"
 	expand_key _key _key
@@ -186,7 +187,7 @@ get_kid() {
 			SIG=$(printf %s.%s "$PROTECTED" "$PAYLOAD" | openssl mac -digest sha256 -macopt "hexkey:$HEX" -binary HMAC | b64url)
 			EAB=',"externalAccountBinding":{"protected":"'$PROTECTED'","payload":"'$PAYLOAD'","signature":"'$SIG'"}'
 		}
-		req "$(json newAccount)" '{"termsOfServiceAgreed":true'"${EMAIL}${EAB}}" '"jwk":'"$JWK" >_res || die 'Registration failed'
+		req "$(json newAccount)" '{"termsOfServiceAgreed":true'"${EMAIL}${EAB}}" '"jwk":'"$JWK" >_res || die 'Registration failed' '' _res
 		conf_set _kid "$(sed -n 's/^[Ll]ocation: *//p' _res)"
 		conf_set _jwk "$JWK"
 		conf_set _thumb "$(shaB64 "$JWK")"
@@ -301,7 +302,7 @@ challenge() {
 		;;
 	esac
 	[ "$1" = http ] || wait_dns "$DOMAIN" "$RR" "${VAL%%;*}"
-	req "$(json url _auth '"type":"'"$1"'-01"')" "{}" >_res || die "Validation Trigger Fail"
+	req "$(json url _auth '"type":"'"$1"'-01"')" "{}" >_res || die 'Validation Trigger Fail' '' _res
 }
 
 
@@ -320,13 +321,13 @@ order() {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
 		ID=$(conf_has "cert $FILE ari_replace" && conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
 		conf_set "cert $FILE ari" '' '[^=]*'
-		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed' order
+		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed' order _order
 		cp _order "$BACKUP"
 	}
 	ORDER_URL=$(sed -n 's/^[Ll]ocation: *//p' _order)
 	[ -n "$ORDER_URL" ] || die 'No order location'
 	for AUTH in $(json authorizations _order); do
-		req "$AUTH" '' >_auth || die 'Auth failed'
+		req "$AUTH" '' >_auth || die 'Auth failed' '' _auth
 		[ "$(json status _auth '"challenges"')" = 'pending' ] && challenge "$AUTH"
 	done
 
@@ -341,11 +342,11 @@ order() {
 			log 'Sending CSR'
 			ALT=$(IFS=,;for N in $1;do get_domain "$N" DNS IP >/dev/null && printf '%s:%s,' "$TYPE" "$N"; done)
 			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=${ALT%,}" -outform DER | b64url)
-			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die 'CSR failed'
+			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die 'CSR failed' '' _res
 			;;
 		valid)
 			log "Downloading certificate: $FILE.crt"
-			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
+			req "$(json certificate _order)" '' >_res || die 'Certificate download failed' '' _res
 
 			# shellcheck disable=SC2046 # Intentionally split
 			set -- $(sed -E '/rel="alternate"/!d;s/.*<|>.*//g' _res)
@@ -354,7 +355,7 @@ order() {
 				ALT=$(conf_get "cert $FILE chain") && { [ "$ALT" -ge 1 ] && [ "$ALT" -le $# ]; } 2>/dev/null && {
 					shift $((ALT-1))
 					log "Downloading alternate certificate $ALT: $1"
-					req "$1" '' >_res || die 'Alternate certificate download failed'
+					req "$1" '' >_res || die 'Alternate certificate download failed' '' _res
 				}
 			}
 
@@ -424,7 +425,7 @@ cert.revoke)
 	B64=$(conf_get "cert $2 b64") || die "No cert $2 in base64 format"
 	[ -z "$4" ] || { [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
 	log "Revoking certificate $2"
-	req "$URL" '{"certificate":"'"$B64"'","reason":'"${4:-0}"'}'>_res || die 'Revoke failed'
+	req "$URL" '{"certificate":"'"$B64"'","reason":'"${4:-0}"'}'>_res || die 'Revoke failed' '' _res
 	log 'Revoke DONE'
 	;;
 domain.drop|cert.drop|ip.drop)
@@ -455,7 +456,7 @@ account-rollover.)
 	JWK=$(jwk _newkey)
 	URL=$(json keyChange) || die 'No keyChange URL'
 
-	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)">_res || die 'Key rollover failed'
+	req "$URL" "$(sign "$URL" '{"account":"'"$(conf_get _kid)"'","oldKey":'"$(conf_get _jwk)"'}' '"jwk":'"$JWK" _newkey)">_res || die 'Key rollover failed' '' _res
 
 	conf_set _key "$(conf_get _newkey)"
 	conf_set _jwk "$JWK"
@@ -468,7 +469,7 @@ account-deactivate.)
 	conf_has _kid || die 'No account to deactivate'
 	log 'Deactivating account'
 	get_kid
-	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed'
+	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed' '' _res
 	for K in kid key jwk thumb; do conf_set "_$K" ''; done
 	log 'Account deactivated successfully'
 	;;
@@ -476,7 +477,7 @@ authz-deactivate.)
 	[ -z "$2" ] && die 'Authorization URL required'
 	log "Deactivating authorization: $2"
 	get_kid
-	req "$2" '{"status":"deactivated"}' >_res || die 'Authorization deactivation failed'
+	req "$2" '{"status":"deactivated"}' >_res || die 'Authorization deactivation failed' '' _res
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)

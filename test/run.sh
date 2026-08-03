@@ -251,6 +251,9 @@ export MOCK_TEST=""
 # --- Test authorization deactivation ---
 Test "Deactivate authorization" authz-deactivate https://mock.acme/authz/1
 
+# A failed request must report the CA response, on stderr and in the log
+Fail 1 "Deactivate unknown authorization" authz-deactivate https://mock.acme/nonexistent
+
 Check "certx.log" ".hooks"
 # --- Test account deactivation ---
 Test "Account deactivate" account-deactivate

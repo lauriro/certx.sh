@@ -1,0 +1,4 @@
+Deactivating authorization: https://mock.acme/nonexistent
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+
+ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"} 

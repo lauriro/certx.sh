@@ -36,7 +36,7 @@ api -X POST --data "$DATA" "$API" >_res || {
 	api "$API?type=TXT&name=$RR" >_res
 } || die "Failed to find TXT record"
 
-RID=$(json id _res '"type":"TXT"') || die "No id for TXT record"
+RID=$(json id _res '"type":"TXT"') || die "No id for TXT record" '' _res
 
 # Send cleanup commands to FD 3
 >&3 printf "curl -fs --retry 5 --retry-connrefused -H 'Authorization: Bearer %s' -H 'Content-Type: application/json' -X DELETE '%s' >/dev/null\n" "$AUTH" "$API/$RID"
