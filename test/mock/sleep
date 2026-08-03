@@ -1,0 +1,5 @@
+#!/bin/sh
+# Mock sleep for testing - report the delay instead of waiting
+# MOCK_SLEEP_QUIET hides the bulk waits of the DNS propagation retry loop
+
+[ -n "$MOCK_SLEEP_QUIET" ] || echo "[sleep $1]" >&2

@@ -238,6 +238,16 @@ Fail 1 "Order with invalid status" cert invalidcert order
 
 export MOCK_TEST=""
 
+# --- Test DNS propagation timeout (dig never returns the expected TXT) ---
+export MOCK_TEST=dns MOCK_SLEEP_QUIET=1 MOCK_DNS_TXT='"never-matches"'
+rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized
+$CMD cert timeoutcert dns.example.com 2>/dev/null
+
+Fail 1 "DNS propagation timeout" cert timeoutcert order
+
+unset MOCK_SLEEP_QUIET
+export MOCK_TEST=""
+
 # --- Test authorization deactivation ---
 Test "Deactivate authorization" authz-deactivate https://mock.acme/authz/1
 

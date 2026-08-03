@@ -104,12 +104,19 @@
 2026-02-05 00:37:51 [1049] tester -- Order invalidcert: example.com
 2026-02-05 00:37:51 [1049] tester -- Creating key 'invalidcert.key'
 2026-02-05 00:37:51 [1049] tester -- ERROR: Order failed
-2026-02-05 00:37:52 [1050] tester -- Deactivating authorization: https://mock.acme/authz/1
 2026-02-05 00:37:52 [1050] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:37:52 [1050] tester -- Authorization status: valid
-valid
-2026-02-05 00:37:53 [1051] tester -- Deactivating account
+2026-02-05 00:37:52 [1050] tester -- Order timeoutcert: dns.example.com
+2026-02-05 00:37:52 [1050] tester -- Authorization dns.example.com: https://mock.acme/authz/3
+2026-02-05 00:37:52 [1050] tester -- Running hook: cloudflare
+2026-02-05 00:37:52 [1050] tester -- Waiting for DNS propagation _acme-challenge.dns.example.com
+2026-02-05 00:37:52 [1050] tester -- ERROR: DNS propagation timeout _acme-challenge.dns.example.com
+2026-02-05 00:37:52 [1050] tester -- Cleanup challenges
+2026-02-05 00:37:53 [1051] tester -- Deactivating authorization: https://mock.acme/authz/1
 2026-02-05 00:37:53 [1051] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:37:53 [1051] tester -- Account deactivated successfully
-2026-02-05 00:37:54 [1052] tester -- Deleting all CA configuration
-2026-02-05 00:37:55 [1053] tester -- No CA configured
+2026-02-05 00:37:53 [1051] tester -- Authorization status: valid
+valid
+2026-02-05 00:37:54 [1052] tester -- Deactivating account
+2026-02-05 00:37:54 [1052] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 00:37:54 [1052] tester -- Account deactivated successfully
+2026-02-05 00:37:55 [1053] tester -- Deleting all CA configuration
+2026-02-05 00:37:56 [1054] tester -- No CA configured

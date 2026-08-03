@@ -335,7 +335,7 @@ order() {
 		case "$(json status _order)" in
 		pending|processing)
 			SLEEP=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _order)") ||:
-			sleep "${SLEEP:-2}"
+			sleep "$((SLEEP>120?120:SLEEP>0?SLEEP:2))"
 			;;
 		ready)
 			log 'Sending CSR'

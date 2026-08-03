@@ -1,0 +1,8 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order timeoutcert: dns.example.com
+Authorization dns.example.com: https://mock.acme/authz/3
+Running hook: cloudflare
+Waiting for DNS propagation _acme-challenge.dns.example.com
+......................................................................................................................................................
+ERROR: DNS propagation timeout _acme-challenge.dns.example.com
+Cleanup challenges
