@@ -108,8 +108,7 @@ conf_get() {
 	conf_has "$1" && printf '%s\n' "$_VAL"
 }
 conf_set() {
-	REST="$(_conf "$1" '!p' "$3")"
-	printf '%s\n' "${2:+"$1 = $2"}" "$REST" | sort | sed '/^$/d' >"$CERTX_CONF~" &&
+	{ [ -z "$2" ] || printf '%s\n' "$1 = $2"; _conf "$1" '!p' "$3"; } | sort >"$CERTX_CONF~" &&
 		mv -f "$CERTX_CONF~" "$CERTX_CONF" || die "Cannot write config: $CERTX_CONF"
 }
 conf_find() {
