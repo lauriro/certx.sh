@@ -129,7 +129,8 @@ shaB64() {
 }
 hexB64() {
 	# shellcheck disable=SC2046 # Intentionally split
-	printf %b "$(printf '\\%03o' $(sed 's/../0x& /g'))" | b64url
+	set -- $(sed 's/../0x& /g')
+	[ $# -eq 0 ] || printf %b "$(printf '\\%03o' "$@")" | b64url
 }
 json() { # [key] [file] [section-matcher]
 	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed 's/{/\n{/g' | sed -n "/${3:-.}/p" | sed -n 's/.*"'"$1"'":\("[^"]\{1,\}"\|\[[^]]\{1,\}\]\|[[:alnum:]]*\).*/\1/p' | sed 's/","/\n/g;s/[]["]//g')
@@ -366,7 +367,7 @@ order() {
 			conf_set "cert $FILE end" "$EXP"
 			conf_set "cert $FILE len" "$(seconds_to "$EXP")"
 
-			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" | sed -n '2s/[^0-9A-Fa-f]//gp' | hexB64) 2>/dev/null
+			AKI=$(openssl x509 -noout -ext authorityKeyIdentifier -in "$FILE.crt" 2>/dev/null | sed -n '2s/keyid://;2s/[^0-9A-Fa-f]//gp' | hexB64)
 			[ -z "$AKI" ] || {
 				conf_set "cert $FILE ari_replace" 1
 				conf_set "cert $FILE ari" "$AKI.$(openssl x509 -noout -serial -in "$FILE.crt" | cut -d= -f2 | hexB64)"
@@ -484,14 +485,16 @@ renew-all.)
 	RENEW=$(IFS=$NL;R=${2:-20%};SKIP='';for C in $(conf_find cert end);do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
-		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && DUE=0 && {
+		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && {
 			# Stored ARI start reached - renew
-			END=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$END" -le 0 ] || {
+			WIN=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$WIN" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
-					req "$ARI/$ID" '' >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && END=$START
+					req "$ARI/$ID" '' >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && WIN=$START
 					RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
 				}
 			}
+			# Fall back to days/% renewal when ARI window is unknown
+			[ -z "$WIN" ] || { DUE=0; END=$WIN; }
 		}
 		LEFT=$(seconds_to "${END:-$DUE}") || continue
 		[ "$LEFT" -lt "$DUE" ] && printf ' %s' "$NAME" || SKIP="$SKIP, $NAME $((LEFT/86400)) days"

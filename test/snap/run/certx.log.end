@@ -60,7 +60,9 @@
 2026-02-05 02:37:43 [1041] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 02:37:43 [1041] tester -- Creating key '_newkey'
 2026-02-05 02:37:43 [1041] tester -- Account key rollover completed
-2026-02-05 02:37:44 [1042] tester -- Deactivating account
 2026-02-05 02:37:44 [1042] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 02:37:44 [1042] tester -- Account deactivated successfully
-2026-02-05 02:37:45 [1043] tester -- Deleting all CA configuration
+2026-02-05 02:37:44 [1042] tester -- Nothing to renew: dnscert 85 days, mycert2 31 days, pendingcert 85 days, persistcert 85 days, testcert 85 days
+2026-02-05 02:37:45 [1043] tester -- Deactivating account
+2026-02-05 02:37:45 [1043] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 02:37:45 [1043] tester -- Account deactivated successfully
+2026-02-05 02:37:46 [1044] tester -- Deleting all CA configuration

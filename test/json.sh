@@ -62,6 +62,12 @@ Test2 "error detail" detail error-malformed.json
 # ARI (renewal info)
 Test2 "ari start" start ari.json
 
+# hexB64 must not fabricate output for empty input (cert without AKI extension)
+CMD=hexB64
+printf 4142 > "$TMP/hex"
+Test "hexB64 empty input" < /dev/null
+Test "hexB64 hex pairs" < "$TMP/hex"
+
 
 
 

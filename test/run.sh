@@ -187,6 +187,12 @@ Test "Account rollover" account-rollover
 # Verify key was updated but _kid stayed the same
 Check "certx.conf" ".rollover" "$FILTER_CONF"
 Check "certx.log" ".rollover"
+# --- Test renew-all with unreachable ARI endpoint (mock returns 404) ---
+# Certs with stored ari must fall back to days/% renewal, not be skipped as "0 days"
+
+Test "Renew-all ARI unavailable" renew-all
+
+Check "certx.conf" ".ari" "$FILTER_CONF"
 # --- Test account deactivation ---
 Test "Account deactivate" account-deactivate
 
