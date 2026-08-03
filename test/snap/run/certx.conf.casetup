@@ -1,6 +1,4 @@
-_ca = https://acme-staging-v02.api.letsencrypt.org/directory
-_email = lauri@rooden.ee
-_terms = YES
+_ca = https://mock.acme/directory
 cert badpath = example.com
 cert badpath ari = Ggiegu-1hWp7idlkxpqxXSXwkn8.TBT-GYs2yWe65ZZ4sA9_CXtjMQo
 cert badpath ari_replace = 1

@@ -1,0 +1,6 @@
+Renewing: renewcert
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order renewcert: example.com
+Creating key 'renewcert.key'
+Downloading certificate: renewcert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)

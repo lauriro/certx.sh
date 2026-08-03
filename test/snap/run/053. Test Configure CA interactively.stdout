@@ -1,0 +1,4 @@
+List of domains:
+  dns.example.com = dns cloudflare TESTTOKEN
+  example.com = http /tmp/certx-test/webroot
+  persist.example.com = dns-persist

@@ -1,0 +1,7 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order hookcert: example.com
+Creating key 'hookcert.key'
+Downloading certificate: hookcert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)
+Deploying hookcert.crt to ftp://mock.acme/certs/hookcert.crt
+Running post-hook

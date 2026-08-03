@@ -1,0 +1,4 @@
+#!/bin/sh
+# Mock ssh for testing - consume the uploaded file and succeed silently
+
+cat >/dev/null

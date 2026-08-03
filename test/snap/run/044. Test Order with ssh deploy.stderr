@@ -1,0 +1,6 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order sshcert: example.com
+Creating key 'sshcert.key'
+Downloading certificate: sshcert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)
+Deploying sshcert.key to ssh://user@host/etc/ssl/sshcert.key

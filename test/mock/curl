@@ -54,7 +54,9 @@ case "$URL" in
 	cat "$RESP/finalize"
 	;;
 */order/*)
-	if [ -f "$MOCK_STATE/finalized" ]; then
+	if [ "$MOCK_TEST" = "invalid" ]; then
+		cat "$RESP/order-invalid"
+	elif [ -f "$MOCK_STATE/finalized" ]; then
 		if [ ! -f "$MOCK_STATE/retry-zero-polled" ]; then
 			touch "$MOCK_STATE/retry-zero-polled"
 			cat "$RESP/order-processing-zero"
@@ -74,6 +76,14 @@ case "$URL" in
 */acct/*)
 	# Account operations (deactivate, update)
 	cat "$RESP/acct-deactivate"
+	;;
+ftp://fail.*|ftps://fail.*)
+	# Host 'fail.*' simulates a rejected upload
+	echo 'curl: (25) Failed FTP upload' >&2
+	exit 25
+	;;
+ftp://*|ftps://*)
+	# Cert deployment upload - silent success
 	;;
 *api.cloudflare.com*/zones\?*)
 	# Cloudflare zone lookup

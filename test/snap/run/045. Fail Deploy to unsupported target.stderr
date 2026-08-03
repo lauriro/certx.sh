@@ -1,0 +1,8 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order badpath: example.com
+Creating key 'badpath.key'
+Downloading certificate: badpath.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)
+Deploying badpath.crt to relative/path.crt
+
+ERROR: Deploy failed: relative/path.crt

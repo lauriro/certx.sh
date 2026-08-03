@@ -1,0 +1,5 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order invalidcert: example.com
+Creating key 'invalidcert.key'
+
+ERROR: Order failed

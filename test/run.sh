@@ -193,6 +193,55 @@ Check "certx.log" ".rollover"
 Test "Renew-all ARI unavailable" renew-all
 
 Check "certx.conf" ".ari" "$FILTER_CONF"
+# --- Test post-hook and ftp deploy ---
+$CMD cert hookcert example.com 2>/dev/null
+$CMD cert hookcert crt_path ftp://mock.acme/certs/hookcert.crt 2>/dev/null
+$CMD cert hookcert post_hook "echo post-hook-ran" 2>/dev/null
+
+Test "Order with post-hook and ftp deploy" cert hookcert order
+
+# --- Test ssh deploy ---
+$CMD cert sshcert example.com 2>/dev/null
+$CMD cert sshcert key_path ssh://user@host/etc/ssl/sshcert.key 2>/dev/null
+
+Test "Order with ssh deploy" cert sshcert order
+
+# --- Test deploy to an unsupported target ---
+$CMD cert badpath example.com 2>/dev/null
+$CMD cert badpath crt_path relative/path.crt 2>/dev/null
+
+Fail 1 "Deploy to unsupported target" cert badpath order
+
+# --- Test deploy transport failure (mock curl rejects host fail.*) ---
+$CMD cert ftpfail example.com 2>/dev/null
+$CMD cert ftpfail crt_path ftp://fail.acme/certs/ftpfail.crt 2>/dev/null
+
+Fail 1 "Deploy ftp upload failure" cert ftpfail order
+
+# --- Test renew-all actually renewing an expired cert ---
+$CMD cert renewcert example.com 2>/dev/null
+$CMD cert renewcert end "Jan 01 00:00:00 2020 GMT" 2>/dev/null
+
+Test "Renew-all renews expired" renew-all 30
+
+# --- Test retry of a saved order file ---
+$CMD cert retrycert example.com 2>/dev/null
+cp "$BIN/test/mock/resp/new-order" "$TMP/retrycert.order-test"
+
+Test "Retry saved order" retry retrycert.order-test
+
+# --- Test order that ends in an unusable state ---
+export MOCK_TEST=invalid
+$CMD cert invalidcert example.com 2>/dev/null
+
+Fail 1 "Order with invalid status" cert invalidcert order
+
+export MOCK_TEST=""
+
+# --- Test authorization deactivation ---
+Test "Deactivate authorization" authz-deactivate https://mock.acme/authz/1
+
+Check "certx.log" ".hooks"
 # --- Test account deactivation ---
 Test "Account deactivate" account-deactivate
 
@@ -202,5 +251,12 @@ Check "certx.conf" ".deactivate" "$FILTER_CONF"
 # --- Test ca-reset (must be last - wipes CA config) ---
 Test "Ca-reset" ca-reset
 Check "certx.conf" ".careset" "$FILTER_CONF"
+
+# --- Test interactive CA setup (ca-reset above wiped the CA config) ---
+printf '%s\n\n' https://mock.acme/directory > "$TMP/ca-input"
+
+Test "Configure CA interactively" domain < "$TMP/ca-input"
+
+Check "certx.conf" ".casetup" "$FILTER_CONF"
 
 Check "certx.log" ".end"

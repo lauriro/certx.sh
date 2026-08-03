@@ -1,0 +1,4 @@
+Deactivating authorization: https://mock.acme/authz/1
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Authorization status: valid
+valid

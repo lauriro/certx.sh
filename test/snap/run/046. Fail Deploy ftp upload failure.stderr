@@ -1,0 +1,9 @@
+CA: https://acme-staging-v02.api.letsencrypt.org/directory
+Order ftpfail: example.com
+Creating key 'ftpfail.key'
+Downloading certificate: ftpfail.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)
+Deploying ftpfail.crt to ftp://fail.acme/certs/ftpfail.crt
+curl: (25) Failed FTP upload
+
+ERROR: Deploy failed: ftp://fail.acme/certs/ftpfail.crt
