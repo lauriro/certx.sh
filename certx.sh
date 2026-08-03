@@ -400,7 +400,7 @@ has cp curl cut date head mv od openssl sed sort tail tr || die "Missing command
 # Touch config file if not writable
 [ -w "$CERTX_CONF" ] || :>"$CERTX_CONF" || die "Cannot create config: $CERTX_CONF"
 :>_cleanup
-trap 'cleanup; rm -f _dir _auth _challenge _key _pub _order _cleanup _newkey _res' EXIT INT TERM
+trap 'cleanup; rm -f _dir _auth _challenge _key _pub _order _cleanup _newkey _res; exit' EXIT INT TERM
 
 CA=$(conf_get _ca) || {
 	log 'No CA configured' ca
