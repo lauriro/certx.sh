@@ -12,7 +12,7 @@ Works with Let's Encrypt, Google Trust, ZeroSSL.
 Just a shell script - requires curl, openssl, and standard Unix utilities (sed, sort, etc.).
 
 ~500 lines of POSIX shell includes
-DNS/HTTP challenges, multi-server deployment (ssh/ftp), account rollover/deactivation, EAB, ARI, wildcard/IP/shortlived/alternate certs.
+DNS/DNS-PERSIST/HTTP challenges, multi-server deployment (ssh/ftp), account rollover/deactivation, EAB, ARI, wildcard/IP/shortlived/alternate certs.
 
 > CA-friendly: creates one account and reuses it for all certificates.
 
@@ -41,6 +41,12 @@ On first run it'll prompt for CA URL and optional email. The account is created 
 
 # Available providers: cloudflare, digitalocean, linode, zone.eu
 curl -O certx.sh/dns-PROVIDER.sh && chmod +x dns-PROVIDER.sh
+
+# DNS-PERSIST - one long-lived TXT record instead of a new one per order
+# Prompts once for _validation-persist.example.com, then reuses it for every order
+./certx.sh domain example.com dns-persist
+./certx.sh domain example.com dns-persist wildcard          # also authorize *.example.com
+./certx.sh domain example.com dns-persist wildcard 20270101 # add persistUntil
 
 # HTTP - writes challenge file to webroot (supports ssh://, needs key login for automation)
 # Note: Webroot directory `/.well-known/acme-challenge/` should exist and be accessible via HTTP.
@@ -155,26 +161,26 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 ## Commands
 
 ```bash
-#-   domain                                     - list configured domains
-#-   domain [name] [dns|http] [opts]..          - configure domain validation
-#-   domain [name] drop                         - remove domain configuration
-#-   ip                                         - list configured IPs
-#-   ip [addr] http [opts]..                    - configure IP validation
-#-   ip [addr] drop                             - remove IP configuration
-#-   cert                                       - list created certificates
-#-   cert [name] [domain,..] [profile]          - configure cert domains and optional CA profile (eg. shortlived)
+#-   domain                                         - list configured domains
+#-   domain [name] [dns|dns-persist|http] [opts]..  - configure domain validation
+#-   domain [name] drop                             - remove domain configuration
+#-   ip                                             - list configured IPs
+#-   ip [addr] http [opts]..                        - configure IP validation
+#-   ip [addr] drop                                 - remove IP configuration
+#-   cert                                           - list created certificates
+#-   cert [name] [domain,..] [profile]              - configure cert domains and optional CA profile (eg. shortlived)
 #-   cert [name] [key_path|crt_path] [paths,..]
-#-   cert [name] post_hook [cmd]                - commands to run after cert deployment
-#-   cert [name] chain [N]                      - set alternate cert positional index (1-..)
-#-   cert [name] order                          - order and deploy named cert
-#-   cert [name] revoke [reason]                - revoke certificate (reason: 0-10, default: 0)
-#-   cert [name] drop                           - remove cert configuration
-#-   account-rollover                           - change account key
-#-   account-deactivate                         - deactivate account
-#-   authz-deactivate [url]                     - deactivate authorization
-#-   ca-reset                                   - delete all CA/account configuration
-#-   renew-all [days|%]                         - renew via ARI or days/% of validity (default: ARI, 20%)
-#-   retry [order-file]                         - retry failed order
+#-   cert [name] post_hook [cmd]                    - commands to run after cert deployment
+#-   cert [name] chain [N]                          - set alternate cert positional index (1-..)
+#-   cert [name] order                              - order and deploy named cert
+#-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
+#-   cert [name] drop                               - remove cert configuration
+#-   account-rollover                               - change account key
+#-   account-deactivate                             - deactivate account
+#-   authz-deactivate [url]                         - deactivate authorization
+#-   ca-reset                                       - delete all CA/account configuration
+#-   renew-all [days|%]                             - renew via ARI or days/% of validity (default: ARI, 20%)
+#-   retry [order-file]                             - retry failed order
 #-   help [topic]
 ```
 
