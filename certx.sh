@@ -244,7 +244,7 @@ wait_dns() {
 	}
 	log "Waiting for DNS propagation $2"
 	SOA=$(dns_query SOA "$1")
-	for i in $(seq 1 150); do
+	i=0;while [ $((i+=1)) -le 150 ]; do
 		[ -n "$(dns_query TXT "$2" "$SOA" "$3")" ] && { log "  OK ($((i*2))s)"; return 0; }
 		sleep 2; printf '.'
 	done >&2
