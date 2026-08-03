@@ -351,7 +351,8 @@ order() {
 			set -- $(sed -E '/rel="alternate"/!d;s/.*<|>.*//g' _res)
 			[ $# -gt 0 ] && ALT="1-$#" && {
 				log "Alternate chains available (${ALT%-1}):$(printf '\n - %s' "$@")"
-				ALT=$(conf_get "cert $FILE chain") && shift $((ALT-1)) 2>/dev/null && {
+				ALT=$(conf_get "cert $FILE chain") && { [ "$ALT" -ge 1 ] && [ "$ALT" -le $# ]; } 2>/dev/null && {
+					shift $((ALT-1))
 					log "Downloading alternate certificate $ALT: $1"
 					req "$1" '' >_res || die 'Alternate certificate download failed'
 				}
