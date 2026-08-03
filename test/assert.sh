@@ -4,6 +4,9 @@ LANG=C
 SUB=$1
 SEQ=1000
 
+# Pin timezone so log timestamps in snapshots match on any machine
+export TZ=UTC
+
 export TMP=/tmp/certx-test
 rm -rf "$TMP" && mkdir -p "$TMP"
 
@@ -12,6 +15,8 @@ rm -rf "$TMP" && mkdir -p "$TMP"
 : ${PASS:=0}
 : ${FAIL:=0}
 : ${SYNC:=0}
+
+COLOR=$(diff --color=always /dev/null /dev/null 2>/dev/null && echo --color=always)
 
 red="\033[31m"
 green="\033[32m"
@@ -45,7 +50,8 @@ Check() {
 		sed "$3" "$2" > "$TMP/_diff2"
 		set -- "$TMP/_diff1" "$TMP/_diff2"
 	}
-	diff -uN --color=always "$1" "$2" &&: $((PASS+=1)) || {
+	# shellcheck disable=SC2086 # COLOR is empty when diff lacks --color (BSD)
+	diff -uN $COLOR "$1" "$2" &&: $((PASS+=1)) || {
 		LINE=$ERR
 		OUT="PASS:%s ${red}${bold}FAIL:%s${reset}"
 		[ "$SUB" = "up" ] && mkdir -p "$(dirname "$A")" && cp "$B" "$A" &&: $((SYNC+=1)) ||: $((FAIL+=1))

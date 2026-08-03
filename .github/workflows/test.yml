@@ -1,0 +1,36 @@
+name: Test
+on: [ push, pull_request, workflow_dispatch ]
+jobs:
+  Linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Run tests
+      run: ./test/json.sh && ./test/run.sh
+
+  macOS:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Run tests
+      # Native BSD userland; only openssl@3 (preinstalled) replaces LibreSSL,
+      # which lacks `ec -no_public` and the `mac` command.
+      run: |
+        export PATH="$(brew --prefix openssl@3)/bin:$PATH"
+        ./test/json.sh && ./test/run.sh
+
+  BusyBox:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Install BusyBox
+      run: sudo apt-get update && sudo apt-get install -y busybox
+    - name: Run tests with BusyBox userland
+      # BusyBox applets shadow coreutils; hooks and cleanup run under BusyBox ash.
+      # GNU diff is kept for the test harness itself (--color) and the date
+      # mock delegates to /bin/date, so BusyBox date parsing is not exercised.
+      run: |
+        mkdir /tmp/bb && busybox --install -s /tmp/bb
+        rm /tmp/bb/diff
+        export PATH="/tmp/bb:$PATH"
+        ./test/json.sh && ./test/run.sh

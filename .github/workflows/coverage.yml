@@ -1,0 +1,30 @@
+name: Coverage
+on: [ push, pull_request, workflow_dispatch ]
+jobs:
+  Coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/cache@v6
+      id: kcov
+      with:
+        path: ~/kcov
+        key: kcov-43-${{ runner.os }}-${{ env.ImageOS }}
+    - name: Install kcov
+      if: steps.kcov.outputs.cache-hit != 'true'
+      run: |
+        sudo apt-get update && sudo apt-get install -y libdw-dev libcurl4-openssl-dev binutils-dev libiberty-dev libssl-dev zlib1g-dev
+        curl -sL https://github.com/SimonKagstrom/kcov/archive/refs/tags/v43.tar.gz | tar xz -C /tmp
+        cmake -S /tmp/kcov-43 -B /tmp/kcov-43/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/kcov"
+        make -j"$(nproc)" -C /tmp/kcov-43/build install
+    - name: Add kcov to PATH
+      run: echo "$HOME/kcov/bin" >> "$GITHUB_PATH"
+    - name: Run coverage
+      run: ./test/coverage.sh
+    - uses: coverallsapp/github-action@v2
+      name: Upload to coveralls.io
+      # kcov has no lcov reporter, cobertura is its closest supported format
+      with:
+        github-token: ${{ github.token }}
+        file: coverage/cobertura.xml
+        format: cobertura
