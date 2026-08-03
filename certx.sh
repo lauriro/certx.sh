@@ -150,7 +150,7 @@ req() {
 	}
 	RES=$(curl -si -A "$UA" --retry 10 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
 	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
-	CODE=$(printf %s "${RES#* }500" | head -n1)
+	CODE="${RES#* }500" CODE=${CODE%%$NL*}
 	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || { printf '%s\n' "$RES" >&2; false; }
 }
 create_key() {
