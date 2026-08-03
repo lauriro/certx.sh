@@ -12,7 +12,7 @@ J=test/data/json
 
 # Create minified version for testing
 minify() {
-	sed -E ':a;N;$!ba;s,[[:space:]]|("([^"\\]|\\.)*"|.),\1,g' < "$1" > "$TMP/min.json"
+	tr -d '\n' < "$1" | sed -E 's,[[:space:]]|("([^"\\]|\\.)*"|.),\1,g' > "$TMP/min.json"
 }
 
 # Test both pretty and minified JSON

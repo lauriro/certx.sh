@@ -1,4 +1,11 @@
-# certx.sh
+
+[1]: https://badgen.net/coveralls/c/github/lauriro/certx.sh
+[2]: https://coveralls.io/r/lauriro/certx.sh
+[5]: https://badgen.net/badge/icon/Buy%20Me%20A%20Tea/orange?icon=kofi&label
+[6]: https://www.buymeacoffee.com/lauriro
+
+
+# certx.sh &ndash; [![Coverage][1]][2] [![Buy Me A Tea][5]][6]
 
 Simple ACME client for green certificates.
 Works with Let's Encrypt, Google Trust, ZeroSSL.
@@ -171,10 +178,9 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 #-   help [topic]
 ```
 
-## License
 
-MIT
+> Copyright (c) Lauri Rooden &lt;lauri@rooden.ee&gt;  
+[MIT License](https://litejs.com/MIT-LICENSE.txt) |
+[GitHub repo](https://github.com/lauriro/certx.sh) |
+[Buy Me A Tea][6]
 
----
-
-https://github.com/lauriro/certx.sh

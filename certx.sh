@@ -101,7 +101,7 @@ _conf() {
 	sed -n "/^$(printf %s "$1" | sed 's/[][\\.^$*]/\\&/g')$3 *= */$2" "$CERTX_CONF"
 }
 conf_has() {
-	_VAL=$(_conf "$1" '!b;s,,,p;q')
+	_VAL=$(_conf "$1" '{s,,,p;q;}')
 	[ -n "$_VAL" ]
 }
 conf_get() {
@@ -112,7 +112,7 @@ conf_set() {
 		mv -f "$CERTX_CONF~" "$CERTX_CONF" || die "Cannot write config: $CERTX_CONF"
 }
 conf_find() {
-	_conf "$1" "!b;s,,$3\1 = ,p" " \([^ ]*\) $2"
+	_conf "$1" "{s,,$3\1 = ,p;}" " \([^ ]*\) $2"
 }
 conf_ask() {
 	conf_has "$1" || conf_set "$1" "$(ask "$2")"
@@ -132,7 +132,7 @@ hexB64() {
 	[ $# -eq 0 ] || printf %b "$(printf '\\%03o' "$@")" | b64url
 }
 json() { # [key] [file] [section-matcher]
-	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed 's/{/\n{/g' | sed -n "/${3:-.}/p" | sed -n 's/.*"'"$1"'":\("[^"]\{1,\}"\|\[[^]]\{1,\}\]\|[[:alnum:]]*\).*/\1/p' | sed 's/","/\n/g;s/[]["]//g')
+	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed "s/{/\\${NL}{/g" | sed -n "/${3:-.}/p" | sed -En 's/.*"'"$1"'":("[^"]+"|\[[^]]+\]|[[:alnum:]]*).*/\1/p' | sed "s/\",\"/\\${NL}/g;s/[][\"]//g")
 	[ -n "$_VAL" ] && printf '%s\n' "$_VAL"
 }
 sign() { # [URL] [PAYLOAD] [JWK] [KEY]
@@ -148,7 +148,7 @@ req() {
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
 	RES=$(curl -si -A "$UA" --retry 10 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
-	NONCE=$(printf %s "$RES" | sed -n 's/replay-nonce: *//pi')
+	NONCE=$(printf %s "$RES" | sed -n 's/^[Rr]eplay-[Nn]once: *//p')
 	CODE="${RES#* }500" CODE=${CODE%%$NL*}
 	[ "${CODE%% *}" -lt 300 ] && printf '%s\n' "$RES" || { printf '%s\n' "$RES" >&2; false; }
 }
@@ -187,7 +187,7 @@ get_kid() {
 			EAB=',"externalAccountBinding":{"protected":"'$PROTECTED'","payload":"'$PAYLOAD'","signature":"'$SIG'"}'
 		}
 		req "$(json newAccount)" '{"termsOfServiceAgreed":true'"${EMAIL}${EAB}}" '"jwk":'"$JWK" >_res || die 'Registration failed'
-		conf_set _kid "$(sed -n 's/^location: *//pi' _res)"
+		conf_set _kid "$(sed -n 's/^[Ll]ocation: *//p' _res)"
 		conf_set _jwk "$JWK"
 		conf_set _thumb "$(shaB64 "$JWK")"
 	}
@@ -323,7 +323,7 @@ order() {
 		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed' order
 		cp _order "$BACKUP"
 	}
-	ORDER_URL=$(sed -n 's/^location: *//pi' _order)
+	ORDER_URL=$(sed -n 's/^[Ll]ocation: *//p' _order)
 	[ -n "$ORDER_URL" ] || die 'No order location'
 	for AUTH in $(json authorizations _order); do
 		req "$AUTH" '' >_auth || die 'Auth failed'
@@ -334,7 +334,7 @@ order() {
 	while req "$ORDER_URL" '' >_order; do
 		case "$(json status _order)" in
 		pending|processing)
-			SLEEP=$(seconds_to "$(sed -n 's/retry-after: *//pi' _order)") ||:
+			SLEEP=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _order)") ||:
 			sleep "${SLEEP:-2}"
 			;;
 		ready)
@@ -348,7 +348,7 @@ order() {
 			req "$(json certificate _order)" '' >_res || die 'Certificate download failed'
 
 			# shellcheck disable=SC2046 # Intentionally split
-			set -- $(sed '/rel="alternate"/!d;s/.*<\|>.*//g' _res)
+			set -- $(sed -E '/rel="alternate"/!d;s/.*<|>.*//g' _res)
 			[ $# -gt 0 ] && ALT="1-$#" && {
 				log "Alternate chains available (${ALT%-1}):$(printf '\n - %s' "$@")"
 				ALT=$(conf_get "cert $FILE chain") && shift $((ALT-1)) 2>/dev/null && {
@@ -468,7 +468,7 @@ account-deactivate.)
 	log 'Deactivating account'
 	get_kid
 	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed'
-	conf_set '_' '' '\(kid\|key\|jwk\|thumb\)'
+	for K in kid key jwk thumb; do conf_set "_$K" ''; done
 	log 'Account deactivated successfully'
 	;;
 authz-deactivate.)
@@ -479,7 +479,8 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	RENEW=$(IFS=$NL;R=${2:-20%};SKIP='';for C in $(conf_find cert end);do
+	IFS=$NL R=${2:-20%} RENEW='' SKIP=''
+	for C in $(conf_find cert end); do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
 		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && {
@@ -487,17 +488,17 @@ renew-all.)
 			WIN=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$WIN" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
 					req "$ARI/$ID" '' >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && WIN=$START
-					RA=$(seconds_to "$(sed -n 's/retry-after: *//pi' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
+					RA=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
 				}
 			}
 			# Fall back to days/% renewal when ARI window is unknown
 			[ -z "$WIN" ] || { DUE=0; END=$WIN; }
 		}
 		LEFT=$(seconds_to "${END:-$DUE}") || continue
-		[ "$LEFT" -lt "$DUE" ] && printf ' %s' "$NAME" || SKIP="$SKIP, $NAME $((LEFT/86400)) days"
-	done 2>/dev/null;printf '\n%s' "${SKIP#, }")
-	SKIP=${RENEW#*$NL} RENEW=${RENEW%%$NL*}
-	[ -z "$RENEW" ] && { log "Nothing to renew${SKIP:+: $SKIP}"; exit 0; }
+		[ "$LEFT" -lt "$DUE" ] && RENEW="$RENEW $NAME" || SKIP="$SKIP, $NAME $((LEFT/86400)) days"
+	done 2>/dev/null
+	unset IFS
+	[ -n "$RENEW" ] || { log "Nothing to renew${SKIP:+: ${SKIP#, }}"; exit 0; }
 	log "Renewing:$RENEW"
 	for CERT in $RENEW; do
 		( order "$CERT" ) || log "Warning: Failed to renew $CERT"

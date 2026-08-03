@@ -1,9 +1,10 @@
 #!/bin/sh
 # Mock date for testing
 
+# Pin current time for deterministic snapshots (GNU -d@, BSD -r)
 case "$1" in
-+%*) set -- "-d@$((SEQ+1770250822))" "$@";;
++%*) /bin/date -d "@$((SEQ+1770250822))" "$@" 2>/dev/null || /bin/date -r "$((SEQ+1770250822))" "$@"
+	exit;;
 esac
-
 /bin/date "$@"
 
