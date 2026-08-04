@@ -118,7 +118,7 @@ conf_ask() {
 	conf_has "$1" || conf_set "$1" "$(ask "$2")"
 }
 b64url() {
-	openssl base64 | tr '/+' '_-' | tr -d '=\n'
+	openssl base64 -A | sed 's,/,_,g;s,+,-,g;s,=*$,,'
 }
 b64dec() {
 	printf "%s%$(((4-${#1}%4)%4))s\n" "$1" '' | tr '_ -' '/=+' | openssl base64 -d
@@ -128,7 +128,7 @@ shaB64() {
 }
 hexB64() {
 	# shellcheck disable=SC2046 # Intentionally split
-	set -- $(sed 's/../0x& /g')
+	set -- $(sed 'y/ /0/;s/../0x& /g')
 	[ $# -eq 0 ] || printf %b "$(printf '\\%03o' "$@")" | b64url
 }
 json() { # [key] [file] [section-matcher]
@@ -139,7 +139,7 @@ sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 	PROT=$(printf '{"alg":"ES256",%s,"url":"%s"}' "${3:-"$KID"}$5" "$1" | b64url)
 	DATA=$(printf %s "$2" | b64url)
 	# shellcheck disable=SC2046 # Intentionally split
-	SIG=$(printf %64s $(printf %s.%s "$PROT" "$DATA" | openssl sha256 -sign "${4:-_key}" | openssl asn1parse -inform der | cut -d: -f4) | tr ' ' 0 | hexB64)
+	SIG=$(printf %64s $(printf %s.%s "$PROT" "$DATA" | openssl sha256 -sign "${4:-_key}" | openssl asn1parse -inform der | cut -d: -f4) | hexB64)
 	printf '{"protected":"%s","payload":"%s","signature":"%s"}' "$PROT" "$DATA" "$SIG"
 }
 req() {
