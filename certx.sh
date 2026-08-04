@@ -1,6 +1,6 @@
 #!/bin/sh -ef
 #-                      https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
-#- certx.sh - v26.8.1 - Simple ACME client for green certificates.
+#- certx.sh - v26.8.2 - Simple ACME client for green certificates.
 #-
 #  Install:
 #    curl -JO certx.sh
@@ -74,7 +74,7 @@
 : "${CERTX_CONF:="./certx.conf"} ${CERTX_LOG:="./certx-$(date +%Y-%m).log"} ${CERTX_PID:=$$}"
 
 umask 077
-export LC_ALL=C UA='certx.sh/26.8.1' CERTX_CONF CERTX_LOG
+export LC_ALL=C UA='certx.sh/26.8.2' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NONCE='' NL='
 '
 
