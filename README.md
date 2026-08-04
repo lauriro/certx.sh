@@ -20,7 +20,7 @@ DNS/DNS-PERSIST/HTTP challenges, multi-server deployment (ssh/ftp), account roll
 ## Quick Start
 
 ```bash
-curl -JO certx.sh
+curl -O certx.sh/certx.sh
 chmod +x certx.sh
 ./certx.sh domain example.com dns cloudflare YOUR-API-TOKEN
 ./certx.sh cert mycert 'example.com,*.example.com'
@@ -186,7 +186,7 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 
 
 > Copyright (c) Lauri Rooden &lt;lauri@rooden.ee&gt;  
-[MIT License](https://litejs.com/MIT-LICENSE.txt) |
+[MIT License](https://certx.sh/MIT-LICENSE.txt) |
 [GitHub repo](https://github.com/lauriro/certx.sh) |
 [Buy Me A Tea][6]
 

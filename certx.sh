@@ -1,9 +1,9 @@
 #!/bin/sh -ef
-#-                      https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
-#- certx.sh - v26.8.2 - Simple ACME client for green certificates.
 #-
+#- certx.sh - v26.8.2 - Simple ACME client for green certificates.
+#-                      https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
 #  Install:
-#    curl -JO certx.sh
+#    curl -O certx.sh/certx.sh
 #    chmod +x certx.sh
 #    ./certx.sh
 #-
