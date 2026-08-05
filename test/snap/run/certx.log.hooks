@@ -103,7 +103,7 @@
 2026-02-05 00:37:51 [1049] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:51 [1049] tester -- Order invalidcert: example.com
 2026-02-05 00:37:51 [1049] tester -- Creating key 'invalidcert.key'
-2026-02-05 00:37:51 [1049] tester -- ERROR: Order failed
+2026-02-05 00:37:51 [1049] tester -- ERROR: Order failed: invalidcert
 2026-02-05 00:37:52 [1050] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:52 [1050] tester -- Order timeoutcert: dns.example.com
 2026-02-05 00:37:52 [1050] tester -- Authorization dns.example.com: https://mock.acme/authz/3

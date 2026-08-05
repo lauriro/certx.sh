@@ -321,13 +321,13 @@ order() {
 		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
 		ID=$(conf_has "cert $FILE ari_replace" && conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
 		conf_set "cert $FILE ari" '' '[^=]*'
-		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die 'Creating order failed' order _order
+		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die "Creating order failed: $FILE" order _order
 		cp _order "$BACKUP"
 	}
 	ORDER_URL=$(sed -n 's/^[Ll]ocation: *//p' _order)
-	[ -n "$ORDER_URL" ] || die 'No order location'
+	[ -n "$ORDER_URL" ] || die "No order location: $FILE"
 	for AUTH in $(json authorizations _order); do
-		req "$AUTH" '' >_auth || die 'Auth failed' '' _auth
+		req "$AUTH" '' >_auth || die "Order auth failed: $FILE" '' _auth
 		[ "$(json status _auth '"challenges"')" = 'pending' ] && challenge "$AUTH"
 	done
 
@@ -342,11 +342,11 @@ order() {
 			log 'Sending CSR'
 			ALT=$(IFS=,;for N in $1;do get_domain "$N" DNS IP >/dev/null && printf '%s:%s,' "$TYPE" "$N"; done)
 			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=${ALT%,}" -outform DER | b64url)
-			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die 'CSR failed' '' _res
+			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die "Order CSR failed: $FILE" '' _res
 			;;
 		valid)
 			log "Downloading certificate: $FILE.crt"
-			req "$(json certificate _order)" '' >_res || die 'Certificate download failed' '' _res
+			req "$(json certificate _order)" '' >_res || die "Download failed: $FILE" '' _res
 
 			# shellcheck disable=SC2046 # Intentionally split
 			set -- $(sed -E '/rel="alternate"/!d;s/.*<|>.*//g' _res)
@@ -355,7 +355,7 @@ order() {
 				ALT=$(conf_get "cert $FILE chain") && { [ "$ALT" -ge 1 ] && [ "$ALT" -le $# ]; } 2>/dev/null && {
 					shift $((ALT-1))
 					log "Downloading alternate certificate $ALT: $1"
-					req "$1" '' >_res || die 'Alternate certificate download failed' '' _res
+					req "$1" '' >_res || die "Alternate certificate download failed: $FILE" '' _res
 				}
 			}
 
@@ -391,7 +391,7 @@ order() {
 		esac
 	done
 	cleanup
-	die 'Order failed'
+	die "Order failed: $FILE"
 }
 
 [ "$1" = lib ] && return 0
@@ -481,7 +481,7 @@ authz-deactivate.)
 	log "Authorization status: $(json status _res)"
 	;;
 renew-all.)
-	IFS=$NL R=${2:-20%} RENEW='' SKIP=''
+	IFS=$NL R=${2:-20%} RC=0 RENEW='' SKIP=''
 	for C in $(conf_find cert end); do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
@@ -500,11 +500,11 @@ renew-all.)
 		[ "$LEFT" -lt "$DUE" ] && RENEW="$RENEW $NAME" || SKIP="$SKIP, $NAME $((LEFT/86400)) days"
 	done 2>/dev/null
 	unset IFS
-	[ -n "$RENEW" ] || { log "Nothing to renew${SKIP:+: ${SKIP#, }}"; exit 0; }
-	log "Renewing:$RENEW"
-	for CERT in $RENEW; do
-		( order "$CERT" ) || log "Warning: Failed to renew $CERT"
-	done
+	[ -z "$RENEW" ] && log "Nothing to renew${SKIP:+: ${SKIP#, }}" || {
+		log "Renewing:$RENEW"
+		for CERT in $RENEW; do ( order "$CERT" ) || RC=1; done
+	}
+	exit "$RC"
 	;;
 retry.)
 	[ -f "$2" ] && CERT=${2%.*} && conf_has "cert $CERT" || die "Invalid order: $2"
