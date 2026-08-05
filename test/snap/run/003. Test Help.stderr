@@ -14,7 +14,9 @@ Commands:
   cert [name] [key_path|crt_path] [paths,..]
   cert [name] post_hook [cmd]                    - commands to run after cert deployment
   cert [name] chain [N]                          - set alternate cert positional index (1-..)
+  cert [name] check_host [host:port] [proto]     - live server endpoint to validate
   cert [name] order                              - order and deploy named cert
+  cert [name] check                              - verify live server serves the ordered cert
   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
   cert [name] drop                               - remove cert configuration
   account-rollover                               - change account key

@@ -1,0 +1,4 @@
+Nothing to renew: badpath 85 days, dnscert 85 days, ftpfail 85 days, hookcert 85 days, mycert2 31 days, pendingcert 85 days, persistcert 85 days, renewcert 85 days, retrycert 85 days, sshcert 85 days, testcert 85 days
+Checking 127.0.0.1:1
+
+ERROR: Cannot get certificate from 127.0.0.1:1

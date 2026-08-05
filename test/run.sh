@@ -273,4 +273,22 @@ Test "Configure CA interactively" domain < "$TMP/ca-input"
 
 Check "certx.conf" ".casetup" "$FILTER_CONF"
 
+
+Fail 1 "Check cert without check_host" cert mycert1 check
+
+Test "Set check_host" cert mycert1 check_host 192.0.2.1:8443 smtp
+Check "certx.conf" ".check_host" "$FILTER_CONF"
+
+Fail 1 "Check cert before ordered" cert mycert1 check
+
+# --- Test live check against an endpoint that refuses the connection ---
+$CMD cert testcert check_host 127.0.0.1:1 2>/dev/null
+
+Fail 1 "Check unreachable server" cert testcert check
+
+# A failed check must surface in the renew-all exit status, for cron and systemd
+Fail 1 "Renew-all with failing check" renew-all 30
+
+
 Check "certx.log" ".end"
+

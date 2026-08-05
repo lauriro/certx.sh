@@ -1,0 +1,10 @@
+
+ERROR: Cert not ordered
+
+Verify live server serves the ordered cert.
+renew-all checks every configured check_host after renewing and exits 1 on failure.
+
+Examples:
+  ./certx.sh cert mycert check_host 10.0.0.5:8443             # any host and port
+  ./certx.sh cert mail check_host mail.example.com:587 smtp   # STARTTLS (smtp, imap, ftp, ..)
+

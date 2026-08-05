@@ -19,7 +19,9 @@
 #-   cert [name] [key_path|crt_path] [paths,..]
 #-   cert [name] post_hook [cmd]                    - commands to run after cert deployment
 #-   cert [name] chain [N]                          - set alternate cert positional index (1-..)
+#-   cert [name] check_host [host:port] [proto]     - live server endpoint to validate
 #-   cert [name] order                              - order and deploy named cert
+#-   cert [name] check                              - verify live server serves the ordered cert
 #-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                               - remove cert configuration
 #-   account-rollover                               - change account key
@@ -45,6 +47,14 @@
 #ca-   Google Live: https://dv.acme-v02.api.pki.goog/directory
 #ca-   ZeroSSL Live: https://acme.zerossl.com/v2/DV90
 #ca-
+#check-
+#check- Verify live server serves the ordered cert.
+#check- renew-all checks every configured check_host after renewing and exits 1 on failure.
+#check-
+#check- Examples:
+#check-   ./certx.sh cert mycert check_host 10.0.0.5:8443             # any host and port
+#check-   ./certx.sh cert mail check_host mail.example.com:587 smtp   # STARTTLS (smtp, imap, ftp, ..)
+#check-
 #dns-
 #dns- Automated DNS validation requires executable script: ./dns-PROVIDER.sh
 #dns- Script adds TXT record and outputs cleanup commands to stdout.
@@ -258,6 +268,17 @@ get_domain() {
 	done
 	printf '%s\n' "$NAME"
 }
+check_cert() {
+	HOST=$(conf_get "cert $1 check_host") && B64=$(conf_get "cert $1 b64") || return 0
+	# shellcheck disable=SC2086 # Intentionally split
+	set -- $HOST
+	log "Checking $1"
+	openssl s_client -connect "$1" ${2:+-starttls "$2"} </dev/null 2>/dev/null | openssl x509 >_crt 2>/dev/null ||
+		die "Cannot get certificate from $1"
+	SRV=$(openssl x509 -noout -serial -enddate -in _crt | tr '\n' ' ') SRV=${SRV% }
+	[ "$(openssl x509 -in _crt -outform DER | b64url)" = "$B64" ] || die "Certificate mismatch on $1: $SRV"
+	log "Certificate OK on $1: $SRV"
+}
 
 challenge() {
 	NAME=$(json value _auth) || die 'No identifier in authorization'
@@ -402,7 +423,7 @@ has cp curl cut date head mv od openssl sed sort tail tr || die "Missing command
 # Touch config file if not writable
 [ -w "$CERTX_CONF" ] || :>"$CERTX_CONF" || die "Cannot create config: $CERTX_CONF"
 :>_cleanup
-trap 'cleanup; rm -f _dir _auth _challenge _key _pub _order _cleanup _newkey _res; exit' EXIT INT TERM
+trap 'cleanup; rm -f _dir _auth _challenge _crt _key _pub _order _cleanup _newkey _res; exit' EXIT INT TERM
 
 CA=$(conf_get _ca) || {
 	log 'No CA configured' ca
@@ -414,10 +435,15 @@ case "$1.$3" in
 cert.order|cert.renew)
 	order "$2"
 	;;
-cert.chain|cert.end|cert.key_path|cert.crt_path|cert.post_hook)
+cert.chain|cert.check_host|cert.end|cert.key_path|cert.crt_path|cert.post_hook)
 	K="$1 $2 $3"
 	shift 3
 	conf_set "$K" "$*"
+	;;
+cert.check)
+	conf_has "cert $2 check_host" || die "No check_host" check
+	conf_has "cert $2 b64" || die "Cert not ordered" check
+	check_cert "$2"
 	;;
 cert.revoke)
 	get_kid
@@ -504,6 +530,8 @@ renew-all.)
 		log "Renewing:$RENEW"
 		for CERT in $RENEW; do ( order "$CERT" ) || RC=1; done
 	}
+	IFS=$NL
+	for C in $(conf_find cert check_host); do (unset IFS; check_cert "${C%% =*}" ) || RC=1; done
 	exit "$RC"
 	;;
 retry.)

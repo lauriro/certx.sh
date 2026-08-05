@@ -123,3 +123,10 @@ valid
 2026-02-05 00:37:55 [1053] tester -- Account deactivated successfully
 2026-02-05 00:37:56 [1054] tester -- Deleting all CA configuration
 2026-02-05 00:37:57 [1055] tester -- No CA configured
+2026-02-05 00:37:58 [1056] tester -- ERROR: No check_host
+2026-02-05 00:38:00 [1058] tester -- ERROR: Cert not ordered
+2026-02-05 00:38:01 [1059] tester -- Checking 127.0.0.1:1
+2026-02-05 00:38:01 [1059] tester -- ERROR: Cannot get certificate from 127.0.0.1:1
+2026-02-05 00:38:02 [1060] tester -- Nothing to renew: badpath 85 days, dnscert 85 days, ftpfail 85 days, hookcert 85 days, mycert2 31 days, pendingcert 85 days, persistcert 85 days, renewcert 85 days, retrycert 85 days, sshcert 85 days, testcert 85 days
+2026-02-05 00:38:02 [1060] tester -- Checking 127.0.0.1:1
+2026-02-05 00:38:02 [1060] tester -- ERROR: Cannot get certificate from 127.0.0.1:1

@@ -68,6 +68,22 @@ Deploy certs to multiple locations (local, SSH, or FTP):
 # Happens automatically after cert order/renewal
 ```
 
+## Verification
+
+Check that a live server really serves the certificate ordered:
+
+```bash
+./certx.sh cert mycert check_host www.example.com:443       # configure the endpoint once
+./certx.sh cert mycert check_host 10.0.0.5:8443             # any host and port
+./certx.sh cert mail check_host mail.example.com:587 smtp   # STARTTLS (smtp, imap, ftp, ..)
+
+./certx.sh cert mycert check
+# Certificate OK on www.example.com:443: serial=04A1.. notAfter=Nov  1 21:37:45 2026 GMT
+```
+
+`renew-all` runs the same check on every cert after renewing.
+
+
 ## Renewal
 
 ```bash
@@ -172,7 +188,9 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 #-   cert [name] [key_path|crt_path] [paths,..]
 #-   cert [name] post_hook [cmd]                    - commands to run after cert deployment
 #-   cert [name] chain [N]                          - set alternate cert positional index (1-..)
+#-   cert [name] check_host [host:port] [proto]     - live server endpoint to validate
 #-   cert [name] order                              - order and deploy named cert
+#-   cert [name] check                              - verify live server serves the ordered cert
 #-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                               - remove cert configuration
 #-   account-rollover                               - change account key
