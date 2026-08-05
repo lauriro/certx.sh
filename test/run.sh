@@ -8,6 +8,7 @@ export SEQ CERTX_PID=1000 SUDO_USER=tester
 
 export CERTX_CONF="$TMP/certx.conf"
 export CERTX_LOG="$TMP/certx.log"
+export TEST_LOG=1
 
 printf '%s\n' \
 	'_terms = YES' \

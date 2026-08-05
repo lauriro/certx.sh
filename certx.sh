@@ -82,7 +82,7 @@ usage() {
 	sed -n "/^#$1- \{0,1\}/s,,,p" "$0" >&2
 }
 log() {
-	printf '%s\n' "$3$1" >&2
+	{ [ -t 2 ] || [ -n "$3$TEST_LOG" ]; } && printf '%s\n' "$3$1" >&2
 	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "$WHO" "$1" >>"$CERTX_LOG"
 	[ -z "$2" ] || usage "$2"
 }
@@ -198,7 +198,7 @@ get_kid() {
 cleanup() {
 	[ -s _cleanup ] || return 0
 	log 'Cleanup challenges'
-	sh _cleanup || log 'Warning: Cleanup failed'
+	sh _cleanup || log 'Warning: Cleanup failed' '' "$NL"
 	:>_cleanup
 }
 seconds_to() {
@@ -238,7 +238,7 @@ dns_query() {
 }
 wait_dns() {
 	has dig || has host || {
-		log 'WARNING: dig/host not found, sleeping 120s without verification'
+		log 'WARNING: dig/host not found, sleeping 120s without verification' '' "$NL"
 		sleep 120
 		return 0
 	}
@@ -383,7 +383,7 @@ order() {
 
 			HOOK=$(conf_get "cert $FILE post_hook") && {
 				log 'Running post-hook'
-				sh -c "$HOOK" || log 'Warning: Post-hook failed'
+				sh -c "$HOOK" || log 'Warning: Post-hook failed' '' "$NL"
 			}
 			return 0
 			;;
