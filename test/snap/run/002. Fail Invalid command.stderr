@@ -1,7 +1,7 @@
 
 ERROR: Invalid command!
 
-certx.sh - v26.8.2 - Simple ACME client for green certificates.
+certx.sh - v26.8.3 - Simple ACME client for green certificates.
                      https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
 
 Commands:
