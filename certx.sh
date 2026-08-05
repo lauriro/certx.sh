@@ -76,14 +76,14 @@
 umask 077
 export LC_ALL=C UA='certx.sh/26.8.2' CERTX_CONF CERTX_LOG
 NOW=$(date +%s) ARI='' KID='' NONCE='' NL='
-'
+' WHO=${SUDO_USER:-${USER:-${LOGNAME:-$(id -un 2>/dev/null ||:)}}}
 
 usage() {
 	sed -n "/^#$1- \{0,1\}/s,,,p" "$0" >&2
 }
 log() {
 	printf '%s\n' "$3$1" >&2
-	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "${SUDO_USER-$USER}" "$1" >>"$CERTX_LOG"
+	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "$WHO" "$1" >>"$CERTX_LOG"
 	[ -z "$2" ] || usage "$2"
 }
 die() {
