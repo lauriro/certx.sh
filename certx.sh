@@ -272,7 +272,6 @@ check_cert() {
 	HOST=$(conf_get "cert $1 check_host") && B64=$(conf_get "cert $1 b64") || return 0
 	# shellcheck disable=SC2086 # Intentionally split
 	set -- $HOST
-	log "Checking $1"
 	openssl s_client -connect "$1" ${2:+-starttls "$2"} </dev/null 2>/dev/null | openssl x509 >_crt 2>/dev/null ||
 		die "Cannot get certificate from $1"
 	SRV=$(openssl x509 -noout -serial -enddate -in _crt | tr '\n' ' ') SRV=${SRV% }
