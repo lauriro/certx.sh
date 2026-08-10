@@ -1,20 +1,15 @@
 #!/bin/sh
+# shellcheck disable=SC2145,SC2059,SC2015
 
 LANG=C
 SUB=$1
-SEQ=1000
+SUITE=${0##*/}
 
-# Pin timezone so log timestamps in snapshots match on any machine
-export TZ=UTC
+export SEQ=1000 TMP=${TMP:-/tmp/shell-test} TZ=UTC
 
-export TMP=/tmp/certx-test
 rm -rf "$TMP" && mkdir -p "$TMP"
 
-: ${SNAP:=$BIN/test/snap}
-
-: ${PASS:=0}
-: ${FAIL:=0}
-: ${SYNC:=0}
+: "${SNAP:=$ROOT/test/snap/${SUITE%.*}} ${PASS:=0} ${FAIL:=0} ${SYNC:=0}"
 
 COLOR=$(diff --color=always /dev/null /dev/null 2>/dev/null && echo --color=always)
 
@@ -28,25 +23,26 @@ OUT="${green}${bold}PASS:%s${reset} FAIL:%s"
 ERR="^^^\n  ${red}✘${reset}"
 OK="  ${green}✔${reset}"
 
-[ "$SUB" = "up" ] &&: ERR="  ${yellow}ℹ${reset}" && rm -f "$SNAP"/*
+[ "$SUB" = "up" ] && ERR="  ${yellow}ℹ${reset}" && mkdir -p "$SNAP" && rm -f "$SNAP"/*
 
 bye() {
 	printf "\n$OUT\n\n" "$PASS" "$FAIL"
 	times
-	#rm -rf $TMP
-	[ "$SUB" = "up" ] && git -C "$BIN" add "$SNAP/"
-	exit $FAIL
+	[ "$SUB" = "up" ] && git -C "$ROOT" add "$SNAP/"
+	exit "$FAIL"
 }
 
 trap "bye" 0 1 2 3 6 15
 
+cd "$TMP"
+echo "Test '$CMD' in '$TMP'"
 
 Check() {
 	set -- "$SNAP/$1${2-".$NAME"}" "$TMP/$1" "$3"
 	A=$1
 	B=$2
 	[ -n "$3" ] && {
-		sed "$3" "$1" > "$TMP/_diff1"
+		sed "$3" "$1" > "$TMP/_diff1" 2>/dev/null
 		sed "$3" "$2" > "$TMP/_diff2"
 		set -- "$TMP/_diff1" "$TMP/_diff2"
 	}
@@ -67,19 +63,19 @@ Test() {
 Fail() {
 	EXIT=$1
 	shift
-	assert $EXIT "Fail $@"
+	assert "$EXIT" "Fail $@"
 }
 
 assert() {
-	: $((SEQ+=1)) $((CERTX_PID+=1))
+	: $((SEQ+=1))
 	EXIT=$1
 	NAME="${SEQ#?}. $2"
 	LINE=$OK
 	shift 2
 	$CMD "$@" >"$TMP/$NAME.stdout" 2>"$TMP/$NAME.stderr"
 	_EXIT=$?
-	Check "$NAME.stderr" ""
-	Check "$NAME.stdout" ""
+	Check "$NAME.stderr" "" "$FILTER"
+	Check "$NAME.stdout" "" "$FILTER"
 	if [ "$_EXIT" != "$EXIT" ]; then
 		LINE="exit status expected:$EXIT actual:$_EXIT\n$ERR"
 		OUT="PASS:%s ${red}${bold}FAIL:%s${reset}"

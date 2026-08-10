@@ -1,15 +1,15 @@
 #!/bin/sh
 # Run tests with kcov line coverage
 
-BIN=$(cd "${0%/*}/.."; pwd)
-COV="$BIN/coverage"
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+COV="$ROOT/coverage"
 
 command -v kcov >/dev/null 2>&1 || { echo "kcov not found" >&2; exit 1; }
 
 KCOV_TMP=$(mktemp -d)
 rm -rf "$COV"
-export CMD="kcov --include-path=$BIN/certx.sh $KCOV_TMP $BIN/certx.sh"
-sh "$BIN/test/run.sh"
+export CMD="kcov --include-path=$ROOT/certx.sh $KCOV_TMP $ROOT/certx.sh"
+sh "$ROOT/test/run.sh"
 RET=$?
 
 cp -rL "$KCOV_TMP/certx.sh" "$COV"

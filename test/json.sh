@@ -1,14 +1,13 @@
 # Run './test/json.sh up' to generate snapshots
 
-export BIN=$(cd ${0%/*}/..;pwd)
-export CMD="json" SNAP=$BIN/test/snap/json
-. ${0%/*}/assert.sh
+CMD=json ROOT=$(cd "$(dirname "$0")/.." && pwd) TMP=/tmp/certx-test
+. "$ROOT/test/assert.sh"
+
 set -- lib
-. ./certx.sh
+. "$ROOT/certx.sh"
 
-echo "Test '$CMD' in '$TMP'"
 
-J=test/data/json
+J=$ROOT/test/data/json
 
 # Create minified version for testing
 minify() {

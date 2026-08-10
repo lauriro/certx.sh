@@ -1,14 +1,20 @@
 #!/bin/sh
 # Run './test/run.sh up' to generate snapshots
 
-export BIN=$(cd ${0%/*}/..;pwd)
-export CMD="${CMD:-$BIN/certx.sh}" SNAP=$BIN/test/snap/run
-export SEQ CERTX_PID=1000 SUDO_USER=tester
-. ${0%/*}/assert.sh
+ROOT=$(cd "$(dirname "$0")/.." && pwd) TMP=/tmp/certx-test
+BASE=${CMD:-$ROOT/certx.sh}   # test/coverage.sh overrides CMD with a kcov wrapper
+CMD=certx
+. "$ROOT/test/assert.sh"
 
-export CERTX_CONF="$TMP/certx.conf"
-export CERTX_LOG="$TMP/certx.log"
-export TEST_LOG=1
+
+
+
+# Used by certx.sh and the mocks as subprocesses
+export CERTX_CONF="$TMP/certx.conf" CERTX_LOG="$TMP/certx.log" PATH="$ROOT/test/mock:$PATH" SUDO_USER=tester TEST_LOG=1
+
+# Deterministic log PIDs: CERTX_PID tracks the per-test counter from assert.sh
+certx() { CERTX_PID=$SEQ $BASE "$@"; }
+
 
 printf '%s\n' \
 	'_terms = YES' \
@@ -16,10 +22,6 @@ printf '%s\n' \
 	'_email = lauri@rooden.ee' \
 > "$CERTX_CONF"
 
-export PATH="$BIN/test/mock:$PATH"
-cd "$TMP"
-
-echo "Test '$CMD' in '$TMP'"
 
 Test "No arguments"
 Fail 1 "Invalid command" invalidcmd
@@ -99,13 +101,13 @@ Check "certx.log" ".config"
 # --- Order test with mocked curl ---
 
 # Generate test cert for mock response (only if doesn't exist)
-[ -f "$BIN/test/mock/resp/mock-cert.pem" ] || {
+[ -f "$ROOT/test/mock/resp/mock-cert.pem" ] || {
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
-		-keyout /dev/null -out "$BIN/test/mock/resp/mock-cert.pem" -days 90 -nodes \
+		-keyout /dev/null -out "$ROOT/test/mock/resp/mock-cert.pem" -days 90 -nodes \
 		-subj '/CN=example.com' 2>/dev/null
 	# Build cert response (headers + PEM body)
-	printf 'HTTP/2 200\nreplay-nonce: mock-nonce-009\n\n' > "$BIN/test/mock/resp/cert"
-	cat "$BIN/test/mock/resp/mock-cert.pem" >> "$BIN/test/mock/resp/cert"
+	printf 'HTTP/2 200\nreplay-nonce: mock-nonce-009\n\n' > "$ROOT/test/mock/resp/cert"
+	cat "$ROOT/test/mock/resp/mock-cert.pem" >> "$ROOT/test/mock/resp/cert"
 }
 
 # Set up mock environment
@@ -139,7 +141,7 @@ export MOCK_TEST=dns
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized  # Clean mock state from previous tests
 
 # Set up domain with cloudflare DNS challenge
-ln -sf "$BIN/dns-cloudflare.sh" "$BIN/certx.sh" "$TMP/"
+ln -sf "$ROOT/dns-cloudflare.sh" "$ROOT/certx.sh" "$TMP/"
 $CMD domain dns.example.com dns cloudflare TESTTOKEN 2>/dev/null
 
 Test "Add cert for DNS challenge" cert dnscert dns.example.com
@@ -227,7 +229,7 @@ Test "Renew-all renews expired" renew-all 30
 
 # --- Test retry of a saved order file ---
 $CMD cert retrycert example.com 2>/dev/null
-cp "$BIN/test/mock/resp/new-order" "$TMP/retrycert.order-test"
+cp "$ROOT/test/mock/resp/new-order" "$TMP/retrycert.order-test"
 
 Test "Retry saved order" retry retrycert.order-test
 
