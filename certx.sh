@@ -24,6 +24,7 @@
 #-   cert [name] check                              - verify live server serves the ordered cert
 #-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                               - remove cert configuration
+#-   account                                        - show account URI and CAA records
 #-   account-rollover                               - change account key
 #-   account-deactivate                             - deactivate account
 #-   authz-deactivate [url]                         - deactivate authorization
@@ -39,6 +40,10 @@
 #-   ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
 #-   ./certx.sh cert mycert order
 #-
+#account-
+#account- Publish DNS CAA records (RFC 8657) to let the CA issue only for this account and validation method.
+#account-  - `account-rollover` keeps the account URI, `ca-reset` creates a new one.
+#account-
 #ca-
 #ca- CA Directory URLs:
 #ca-   LetsEncrypt Test: https://acme-staging-v02.api.letsencrypt.org/directory
@@ -475,6 +480,16 @@ cert.?*|domain.dns|domain.http|domain.dns-persist|ip.http)
 cert.|domain.|ip.)
 	printf 'List of %ss:\n' "$1"
 	conf_find "$1" '' '  '
+	;;
+account.)
+	get_kid
+	ACCT=$(conf_get _kid)
+	CAA=$(json caaIdentities) && CAA=${CAA%%$NL*} || CAA='CA-DOMAIN'
+	printf 'Account URI: %s\n\nCAA records to bind issuance to this account:\n' "$ACCT"
+	(IFS=$NL;for D in $(conf_find domain ''); do
+		M=${D#*= }
+		printf '  %s CAA 0 issue "%s;accounturi=%s;validationmethods=%s-01"\n' "${D%% =*}" "$CAA" "$ACCT" "${M%% *}"
+	done)
 	;;
 account-rollover.)
 	use_kid_for 'Rolling over account key'

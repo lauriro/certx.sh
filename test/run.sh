@@ -190,6 +190,7 @@ Test "Account rollover" account-rollover
 # Verify key was updated but _kid stayed the same
 Check "certx.conf" ".rollover" "$FILTER_CONF"
 Check "certx.log" ".rollover"
+
 # --- Test renew-all with unreachable ARI endpoint (mock returns 404) ---
 # Certs with stored ari must fall back to days/% renewal, not be skipped as "0 days"
 
@@ -294,3 +295,13 @@ Fail 1 "Renew-all with failing check" renew-all 30
 
 Check "certx.log" ".end"
 
+# --- Account commands and CAA binding (RFC 8657) ---
+Test "Help account" help account
+
+# ca-reset above wiped the account, so this must register a new one and accept the ToS
+printf 'YES\n' > "$TMP/yes-input"
+
+Test "Account registers when missing" account < "$TMP/yes-input"
+
+# The account just created is reused here, printing records without registering again
+Test "Account CAA records" account

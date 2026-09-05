@@ -1,0 +1,6 @@
+Account URI: https://mock.acme/acct/1
+
+CAA records to bind issuance to this account:
+  dns.example.com CAA 0 issue "mock.acme;accounturi=https://mock.acme/acct/1;validationmethods=dns-01"
+  example.com CAA 0 issue "mock.acme;accounturi=https://mock.acme/acct/1;validationmethods=http-01"
+  persist.example.com CAA 0 issue "mock.acme;accounturi=https://mock.acme/acct/1;validationmethods=dns-persist-01"

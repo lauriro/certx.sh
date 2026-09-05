@@ -1,0 +1,4 @@
+
+Publish DNS CAA records (RFC 8657) to let the CA issue only for this account and validation method.
+ - `account-rollover` keeps the account URI, `ca-reset` creates a new one.
+

@@ -12,7 +12,7 @@ Works with Let's Encrypt, Google Trust, ZeroSSL.
 Just a shell script - requires curl, openssl, and standard Unix utilities (sed, sort, etc.).
 
 ~500 lines of POSIX shell includes
-DNS/DNS-PERSIST/HTTP challenges, multi-server deployment (ssh/ftp), account rollover/deactivation, EAB, ARI, wildcard/IP/shortlived/alternate certs.
+DNS/DNS-PERSIST/HTTP challenges, multi-server deployment (ssh/ftp), account rollover/deactivation, CAA binding records, EAB, ARI, wildcard/IP/shortlived/alternate certs.
 
 > CA-friendly: creates one account and reuses it for all certificates.
 
@@ -132,6 +132,22 @@ Persistent=true
 WantedBy=timers.target
 ```
 
+## CAA account and method binding
+
+Publish DNS CAA records ([RFC 8657](https://www.rfc-editor.org/rfc/rfc8657.html))
+to let the CA issue only for this account and validation method.
+
+```bash
+./certx.sh account
+# Account URI: https://acme-v02.api.letsencrypt.org/acme/acct/1234567890
+#
+# CAA records to bind issuance to this account:
+#   example.com CAA 0 issue "letsencrypt.org;accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/123456;validationmethods=dns-01"
+```
+
+ - `account-rollover` keeps the account URI, `ca-reset` creates a new one.
+
+
 ## Other
 
 **Wildcards** need DNS validation:
@@ -193,6 +209,7 @@ CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
 #-   cert [name] check                              - verify live server serves the ordered cert
 #-   cert [name] revoke [reason]                    - revoke certificate (reason: 0-10, default: 0)
 #-   cert [name] drop                               - remove cert configuration
+#-   account                                        - show account URI and CAA records
 #-   account-rollover                               - change account key
 #-   account-deactivate                             - deactivate account
 #-   authz-deactivate [url]                         - deactivate authorization
