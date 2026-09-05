@@ -84,4 +84,4 @@ cert timeoutcert = dns.example.com
 domain dns.example.com = dns cloudflare TESTTOKEN
 domain example.com = http /tmp/certx-test/webroot
 domain persist.example.com = dns-persist
-domain persist.example.com persist = mock.acme; accounturi=https://mock.acme/acct/1
+domain persist.example.com persist = mock.acme;accounturi=https://mock.acme/acct/1

@@ -168,7 +168,7 @@ $CMD domain persist.example.com dns-persist 2>/dev/null
 Test "Add cert for persist challenge" cert persistcert persist.example.com
 
 # Set MOCK_DNS_PERSIST_TXT to match issuer-domain-name so wait_dns succeeds
-export MOCK_DNS_PERSIST_TXT='"mock.acme; accounturi=https://mock.acme/acct/1"'
+export MOCK_DNS_PERSIST_TXT='"mock.acme;accounturi=https://mock.acme/acct/1"'
 
 # Pipe 'y' to stdin to answer the "Done?" prompt on first order
 echo y | Test "Order with persist challenge" cert persistcert order

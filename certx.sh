@@ -295,7 +295,7 @@ challenge() {
 		RR="_validation-persist.$NAME"
 		VAL=$(conf_get "domain $DOMAIN persist") || {
 			VAL=$(json issuer-domain-names _auth '"type":"dns-persist-01"') || die 'CA do not support dns-persist'
-			VAL="${VAL%%$NL*}; accounturi=$(conf_get _kid)${2:+"; policy=wildcard"}${3:+"; persistUntil=$3"}"
+			VAL="${VAL%%$NL*};accounturi=$(conf_get _kid)${2:+";policy=wildcard"}${3:+";persistUntil=$3"}"
 			printf 'Add DNS record: %s TXT="%s"\nDone? ' "$RR" "$VAL"
 			read -r _
 			conf_set "domain $DOMAIN persist" "$VAL"
