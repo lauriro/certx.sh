@@ -205,6 +205,11 @@ get_kid() {
 	ARI=$(json renewalInfo ||:)
 	KID='"kid":"'$(conf_get _kid)'"'
 }
+use_kid_for() {
+	log "$1"
+	conf_has _kid || die 'No account'
+	get_kid
+}
 cleanup() {
 	[ -s _cleanup ] || return 0
 	log 'Cleanup challenges'
@@ -445,11 +450,10 @@ cert.check)
 	check_cert "$2"
 	;;
 cert.revoke)
-	get_kid
-	URL=$(json revokeCert) || die 'No revokeCert URL'
 	B64=$(conf_get "cert $2 b64") || die "No cert $2 in base64 format"
 	[ -z "$4" ] || { [ "$4" -ge 0 ] && [ "$4" -le 10 ]; } 2>/dev/null || die 'Reason must be numeric 0-10'
-	log "Revoking certificate $2"
+	use_kid_for "Revoking certificate $2"
+	URL=$(json revokeCert) || die 'No revokeCert URL'
 	req "$URL" '{"certificate":"'"$B64"'","reason":'"${4:-0}"'}'>_res || die 'Revoke failed' '' _res
 	log 'Revoke DONE'
 	;;
@@ -473,10 +477,7 @@ cert.|domain.|ip.)
 	conf_find "$1" '' '  '
 	;;
 account-rollover.)
-	conf_has _kid || die 'No account to rollover'
-	log 'Rolling over account key'
-	get_kid
-
+	use_kid_for 'Rolling over account key'
 	expand_key _newkey _newkey
 	JWK=$(jwk _newkey)
 	URL=$(json keyChange) || die 'No keyChange URL'
@@ -491,17 +492,14 @@ account-rollover.)
 	log 'Account key rollover completed'
 	;;
 account-deactivate.)
-	conf_has _kid || die 'No account to deactivate'
-	log 'Deactivating account'
-	get_kid
+	use_kid_for 'Deactivating account'
 	req "$(conf_get _kid)" '{"status":"deactivated"}'>_res || die 'Account deactivation failed' '' _res
 	for K in kid key jwk thumb; do conf_set "_$K" ''; done
 	log 'Account deactivated successfully'
 	;;
 authz-deactivate.)
 	[ -z "$2" ] && die 'Authorization URL required'
-	log "Deactivating authorization: $2"
-	get_kid
+	use_kid_for "Deactivating authorization: $2"
 	req "$2" '{"status":"deactivated"}' >_res || die 'Authorization deactivation failed' '' _res
 	log "Authorization status: $(json status _res)"
 	;;
