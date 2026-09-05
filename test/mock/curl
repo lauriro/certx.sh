@@ -2,6 +2,7 @@
 # Mock curl for ACME testing - returns pre-recorded responses with state tracking
 
 for arg; do URL=$arg; done
+[ -z "$MOCK_REQUESTS" ] || printf '%s\n' "$URL" >> "$MOCK_REQUESTS"
 RESP=${MOCK_RESP:-$(dirname "$0")/resp}
 FILE="$RESP/${URL##*/}"
 
@@ -51,7 +52,13 @@ case "$URL" in
 	;;
 */finalize/*)
 	touch "$MOCK_STATE/finalized"
-	cat "$RESP/finalize"
+	if [ "$MOCK_TEST" = "finalize-valid" ]; then
+		cat "$RESP/order-valid"
+	elif [ "$MOCK_TEST" = "finalize-processing" ]; then
+		cat "$RESP/finalize-processing"
+	else
+		cat "$RESP/finalize"
+	fi
 	;;
 */order/*)
 	if [ "$MOCK_TEST" = "invalid" ]; then

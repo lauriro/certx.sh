@@ -305,3 +305,18 @@ Test "Account registers when missing" account < "$TMP/yes-input"
 
 # The account just created is reused here, printing records without registering again
 Test "Account CAA records" account
+
+# Finalize can return valid immediately; do not poll a stale order replica.
+export MOCK_TEST=finalize-valid MOCK_REQUESTS="$TMP/finalize-requests"
+rm -f "$MOCK_STATE/finalized" "$MOCK_STATE/retry-zero-polled"
+$CMD cert finalizecert example.com 2>/dev/null
+Test "Download valid finalize response" cert finalizecert order
+Check "finalize-requests" ""
+
+# A processing finalize response supplies the delay before the next poll.
+export MOCK_TEST=finalize-processing MOCK_REQUESTS="$TMP/finalize-processing-requests"
+rm -f "$MOCK_STATE/finalized"
+touch "$MOCK_STATE/retry-zero-polled"
+$CMD cert processingcert example.com 2>/dev/null
+Test "Wait for processing finalize response" cert processingcert order
+Check "finalize-processing-requests" ""

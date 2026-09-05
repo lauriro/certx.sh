@@ -5,5 +5,6 @@ Waiting for DNS propagation _validation-persist.persist.example.com
   OK (2s)
 Creating key 'persistcert.key'
 Sending CSR
+[sleep 2]
 Downloading certificate: persistcert.crt
 Expires: May  1 22:09:24 2026 GMT (85 days)

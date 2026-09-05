@@ -1,0 +1,7 @@
+CA: https://mock.acme/directory
+Order processingcert: example.com
+Creating key 'processingcert.key'
+Sending CSR
+[sleep 7]
+Downloading certificate: processingcert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)

@@ -1,0 +1,5 @@
+HTTP/2 200
+replay-nonce: mock-nonce-007
+retry-after: 7
+
+{"status":"processing"}

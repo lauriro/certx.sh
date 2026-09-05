@@ -1,0 +1,6 @@
+https://mock.acme/directory
+https://mock.acme/new-order
+https://mock.acme/authz/1
+https://mock.acme/order/1
+https://mock.acme/finalize/1
+https://mock.acme/cert/1

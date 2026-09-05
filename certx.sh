@@ -362,17 +362,19 @@ order() {
 	done
 
 	expand_key "cert $FILE key" "$FILE.key"
-	while req "$ORDER_URL" '' >_order; do
+	req "$ORDER_URL" '' >_order && while :; do
 		case "$(json status _order)" in
 		pending|processing)
 			SLEEP=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _order)") ||:
 			sleep "$((SLEEP>120?120:SLEEP>0?SLEEP:2))"
+			req "$ORDER_URL" '' >_order || break
 			;;
 		ready)
 			log 'Sending CSR'
 			ALT=$(IFS=,;for N in $1;do get_domain "$N" DNS IP >/dev/null && printf '%s:%s,' "$TYPE" "$N"; done)
 			CSR=$(openssl req -new -sha256 -key "$FILE.key" -subj '/' -addext "subjectAltName=${ALT%,}" -outform DER | b64url)
 			req "$(json finalize _order)" '{"csr":"'"$CSR"'"}' >_res || die "Order CSR failed: $FILE" '' _res
+			mv _res _order
 			;;
 		valid)
 			log "Downloading certificate: $FILE.crt"

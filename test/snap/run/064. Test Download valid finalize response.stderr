@@ -1,0 +1,6 @@
+CA: https://mock.acme/directory
+Order finalizecert: example.com
+Creating key 'finalizecert.key'
+Sending CSR
+Downloading certificate: finalizecert.crt
+Expires: May  1 22:09:24 2026 GMT (85 days)
