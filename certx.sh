@@ -508,7 +508,7 @@ renew-all.)
 	for C in $(conf_find cert end); do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
-		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_kid && [ -n "$ARI" ] && {
+		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && conf_has _kid && get_kid && [ -n "$ARI" ] && {
 			# Stored ARI start reached - renew
 			WIN=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$WIN" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
@@ -524,8 +524,8 @@ renew-all.)
 	done 2>/dev/null
 	unset IFS
 	[ -z "$RENEW" ] && log "Nothing to renew${SKIP:+: ${SKIP#, }}" || {
-		log "Renewing:$RENEW"
-		for CERT in $RENEW; do ( order "$CERT" ) || RC=1; done
+		use_kid_for "Renewing:$RENEW"
+		for CERT in $RENEW; do NONCE=$(order "$CERT" >&3 && printf %s "$NONCE") || RC=1; done 3>&1
 	}
 	IFS=$NL
 	for C in $(conf_find cert check_host); do (unset IFS; check_cert "${C%% =*}" ) || RC=1; done
