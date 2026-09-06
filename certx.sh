@@ -150,7 +150,7 @@ hexB64() {
 	[ $# -eq 0 ] || printf %b "$(printf '\\%03o' "$@")" | b64url
 }
 json() { # [key] [file] [section-matcher]
-	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed "s/{/\\${NL}{/g" | sed -n "/${3:-.}/p" | sed -En 's/.*"'"$1"'":("[^"]+"|\[[^]]+\]|[[:alnum:]]*).*/\1/p' | sed "s/\",\"/\\${NL}/g;s/[][\"]//g")
+	_VAL=$(tr -d '\011\n ' <"${2:-_dir}" | sed "s/{/\\${NL}{/g" | sed -En "/${3:-.}/"'{s/.*"'"$1"'":("[^"]+"|\[[^]]+\]|[[:alnum:]]*).*/\1/p;}' | sed "s/\",\"/\\${NL}/g;s/[][\"]//g")
 	[ -n "$_VAL" ] && printf '%s\n' "$_VAL"
 }
 sign() { # [URL] [PAYLOAD] [JWK] [KEY]
