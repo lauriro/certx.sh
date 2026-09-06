@@ -92,7 +92,13 @@ case "$URL" in
 	fi
 	;;
 */cert/*)
-	cat "$RESP/cert"
+	if [ "$MOCK_TEST" = cert-404 ] && [ ! -f "$MOCK_STATE/cert-fetched" ]; then
+		# First fetch 404s, as when the certificate has not reached the CDN yet
+		touch "$MOCK_STATE/cert-fetched"
+		printf 'HTTP/2 404\n\n{"error":"not found"}'
+	else
+		cat "$RESP/cert"
+	fi
 	;;
 */revoke-cert)
 	cat "$RESP/revoke-cert"

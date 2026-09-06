@@ -1,0 +1,9 @@
+CA: https://mock.acme/directory
+Order cdncert: example.com
+Creating key 'cdncert.key'
+Sending CSR
+[sleep 2]
+[sleep 2]
+Downloading certificate: cdncert.crt
+[sleep 5]
+Expires: May  1 22:09:24 2026 GMT (85 days)

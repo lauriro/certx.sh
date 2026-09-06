@@ -387,7 +387,9 @@ order() {
 			;;
 		valid)
 			log "Downloading certificate: $FILE.crt"
-			req "$(json certificate _order)" '' >_res || die "Download failed: $FILE" '' _res
+			# Retry once, the certificate may not be on the CDN yet
+			req "$(json certificate _order)" '' >_res ||
+				{ sleep 5; req "$(json certificate _order)" '' >_res; } || die "Download failed: $FILE" '' _res
 
 			# shellcheck disable=SC2046 # Intentionally split
 			set -- $(sed -E '/rel="alternate"/!d;s/.*<|>.*//g' _res)

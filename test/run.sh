@@ -367,3 +367,11 @@ sed 's/Jan 01 00:00:00 2020 GMT/Feb 20 00:00:00 2026 GMT/' "$TMP/ari-original" >
 export MOCK_TEST=ari-unsupported MOCK_REQUESTS="$TMP/ari-unsupported-requests"
 Test "CA without ARI" renew-all
 Check "ari-unsupported-requests" ""
+
+# A certificate may lag behind on the CDN; the download retries once after 404.
+cd "$TMP"
+export CERTX_CONF="$TMP/certx.conf" MOCK_TEST=cert-404 MOCK_REQUESTS=""
+rm -f "$MOCK_STATE/auth-challenged" "$MOCK_STATE/finalized" "$MOCK_STATE/retry-zero-polled" "$MOCK_STATE/cert-fetched"
+$CMD cert cdncert example.com 2>/dev/null
+
+Test "Retry certificate download after 404" cert cdncert order
