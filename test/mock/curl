@@ -9,7 +9,24 @@ FILE="$RESP/${URL##*/}"
 # State-based responses
 case "$URL" in
 */directory|*/new-acct|*/new-nonce|*/key-change)
-	cat "$FILE"
+	if [ "$MOCK_TEST" = ari-unsupported ]; then
+		sed 's/"renewalInfo":"[^"]*",//' "$FILE"
+	else
+		cat "$FILE"
+	fi
+	;;
+*/renewal-info/*)
+	# ARI is an unauthenticated GET; reject signed POST-as-GET requests.
+	for arg; do
+		[ "$arg" != -d ] || {
+			printf 'HTTP/2 405\n\n{"error":"ARI requires GET"}'
+			exit 0
+		}
+	done
+	case "$MOCK_TEST" in
+	ari-future|ari-due) cat "$RESP/$MOCK_TEST";;
+	*) printf 'HTTP/2 404\n\n{"error":"not found"}';;
+	esac
 	;;
 */new-order)
 	if [ "$MOCK_TEST" = "persist" ]; then

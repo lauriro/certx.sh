@@ -90,7 +90,7 @@
 
 umask 077
 export LC_ALL=C UA='certx.sh/26.8.3' CERTX_CONF CERTX_LOG
-NOW=$(date +%s) STAMP=$(date +%Y%m%d-%H%M%S)-$$ ARI='' KID='' LOG=certx-$STAMP.log NONCE='' NL='
+NOW=$(date +%s) STAMP=$(date +%Y%m%d-%H%M%S)-$$ ARI='' DIR='' KID='' LOG=certx-$STAMP.log NONCE='' NL='
 ' WHO=${SUDO_USER:-${USER:-${LOGNAME:-$(id -un 2>/dev/null ||:)}}}
 
 usage() {
@@ -186,10 +186,16 @@ jwk() {
 	openssl ec -in "$1" -pubout -outform DER 2>/dev/null >_pub
 	printf '{"crv":"P-256","kty":"EC","x":"%s","y":"%s"}' "$(tail -c64 _pub | head -c32 | b64url)" "$(tail -c32 _pub | b64url)"
 }
-get_kid() {
-	[ -z "$KID" ] || return
+get_dir() {
+	[ -z "$DIR" ] || return 0
 	req "$CA" >_dir || die "Cannot get CA: $CA" '' _dir
 	log "CA: $CA"
+	ARI=$(json renewalInfo ||:)
+	DIR=1
+}
+get_kid() {
+	[ -z "$KID" ] || return
+	get_dir
 	conf_ask _terms "CA Terms of Service: $(json termsOfService)\nAccept? (type YES)"
 	expand_key _key _key
 	conf_has _kid || {
@@ -212,7 +218,6 @@ get_kid() {
 		conf_set _jwk "$JWK"
 		conf_set _thumb "$(shaB64 "$JWK")"
 	}
-	ARI=$(json renewalInfo ||:)
 	KID='"kid":"'$(conf_get _kid)'"'
 }
 use_kid_for() {
@@ -529,11 +534,11 @@ renew-all.)
 	for C in $(conf_find cert end); do
 		END=${C##*= } NAME=${C%% =*}
 		case $R in *%) LEN=$(conf_get "cert $NAME len") && DUE=$((LEN*${R%\%}/100)) || DUE=86400;; *) DUE=$((R*86400));; esac
-		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && conf_has _kid && get_kid && [ -n "$ARI" ] && {
+		[ -z "$2" ] && ID=$(conf_get "cert $NAME ari") && get_dir && [ -n "$ARI" ] && {
 			# Stored ARI start reached - renew
 			WIN=$(seconds_to "$(conf_get "cert $NAME ari_start")") && [ "$WIN" -le 0 ] || {
 				RA=$(conf_get "cert $NAME ari_retry") && [ "$RA" -gt "$NOW" ] || {
-					req "$ARI/$ID" '' >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && WIN=$START
+					req "$ARI/$ID" >_res && START=$(json start _res) && conf_set "cert $NAME ari_start" "$START" && WIN=$START
 					RA=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _res)") && [ "${RA:-0}" -gt 0 ] && conf_set "cert $NAME ari_retry" "$((RA+NOW))"
 				}
 			}

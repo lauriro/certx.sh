@@ -1,0 +1,4 @@
+HTTP/2 200
+retry-after: 3600
+
+{"suggestedWindow":{"start":"2026-02-04T00:00:00Z","end":"2026-02-05T00:00:00Z"}}

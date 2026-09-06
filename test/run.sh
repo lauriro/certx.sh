@@ -338,3 +338,32 @@ Check "saved-debug" "" "$FILTER"
 # Failed orders and their debug logs share the startup timestamp and PID.
 set -- "$TMP"/invalidcert.order-*
 Is "Preserve certificate order debug log" -s "$TMP/certx-${1##*.order-}.log"
+
+# ARI must work without account configuration, even for expired certificates.
+export CERTX_CONF="$TMP/ari.conf" MOCK_TEST=ari-future MOCK_REQUESTS="$TMP/ari-requests"
+cat > "$CERTX_CONF" <<'EOF'
+_ca = https://mock.acme/directory
+cert ari1 = example.com
+cert ari1 ari = mock.1
+cert ari1 end = Jan 01 00:00:00 2020 GMT
+cert ari2 = example.com
+cert ari2 ari = mock.2
+cert ari2 end = Jan 01 00:00:00 2020 GMT
+EOF
+cp "$CERTX_CONF" "$TMP/ari-original"
+Test "ARI without an account" renew-all
+Check "ari-requests" ""
+Check "ari.conf" ""
+
+# A due ARI window still requires an existing account before placing orders.
+cp "$TMP/ari-original" "$CERTX_CONF"
+export MOCK_TEST=ari-due
+:> "$MOCK_REQUESTS"
+Fail 1 "ARI renewal requires an account" renew-all
+Check "ari-requests" ""
+
+# Cache a directory without renewalInfo too, instead of fetching it per cert.
+sed 's/Jan 01 00:00:00 2020 GMT/Feb 20 00:00:00 2026 GMT/' "$TMP/ari-original" > "$CERTX_CONF"
+export MOCK_TEST=ari-unsupported MOCK_REQUESTS="$TMP/ari-unsupported-requests"
+Test "CA without ARI" renew-all
+Check "ari-unsupported-requests" ""
