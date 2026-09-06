@@ -1,14 +1,14 @@
-2026-02-05 00:37:04 [1002] tester -- ERROR: Invalid command!
-2026-02-05 00:37:13 [1011] tester -- ERROR: No executable DNS validation hook!
+2026-02-05 00:37:04 [1002] tester -- ERROR: Invalid command! (log: certx-20260205-003704-PID.log)
+2026-02-05 00:37:13 [1011] tester -- ERROR: No executable DNS validation hook! (log: certx-20260205-003713-PID.log)
 2026-02-05 00:37:22 [1020] tester -- Deleting cert: profilecert
 2026-02-05 00:37:26 [1024] tester -- Deleting cert: mycert
 2026-02-05 00:37:27 [1025] tester -- Deleting domain: sub.example.com
 2026-02-05 00:37:28 [1026] tester -- Deleting ip: 203.0.113.1
 2026-02-05 00:37:29 [1027] tester -- Nothing to renew
 2026-02-05 00:37:30 [1028] tester -- Nothing to renew: mycert1 26992 days, mycert2 31 days
-2026-02-05 00:37:31 [1029] tester -- ERROR: Authorization URL required
-2026-02-05 00:37:32 [1030] tester -- ERROR: Invalid order: 
-2026-02-05 00:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order
+2026-02-05 00:37:31 [1029] tester -- ERROR: Authorization URL required (log: certx-20260205-003731-PID.log)
+2026-02-05 00:37:32 [1030] tester -- ERROR: Invalid order:  (log: certx-20260205-003732-PID.log)
+2026-02-05 00:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order (log: certx-20260205-003733-PID.log)
 2026-02-05 00:37:35 [1033] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:35 [1033] tester -- Creating key '_key'
 2026-02-05 00:37:35 [1033] tester -- Registering account

@@ -1,5 +1,5 @@
 
-ERROR: Cert not ordered
+ERROR: Cert not ordered (log: certx-20260205-003800-PID.log)
 
 Verify live server serves the ordered cert.
 renew-all checks every configured check_host after renewing and exits 1 on failure.

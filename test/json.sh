@@ -1,3 +1,4 @@
+#!/bin/sh
 # Run './test/json.sh up' to generate snapshots
 
 CMD=json ROOT=$(cd "$(dirname "$0")/.." && pwd) TMP=/tmp/certx-test

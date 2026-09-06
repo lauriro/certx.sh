@@ -1,14 +1,14 @@
-2026-02-05 00:37:04 [1002] tester -- ERROR: Invalid command!
-2026-02-05 00:37:13 [1011] tester -- ERROR: No executable DNS validation hook!
+2026-02-05 00:37:04 [1002] tester -- ERROR: Invalid command! (log: certx-20260205-003704-PID.log)
+2026-02-05 00:37:13 [1011] tester -- ERROR: No executable DNS validation hook! (log: certx-20260205-003713-PID.log)
 2026-02-05 00:37:22 [1020] tester -- Deleting cert: profilecert
 2026-02-05 00:37:26 [1024] tester -- Deleting cert: mycert
 2026-02-05 00:37:27 [1025] tester -- Deleting domain: sub.example.com
 2026-02-05 00:37:28 [1026] tester -- Deleting ip: 203.0.113.1
 2026-02-05 00:37:29 [1027] tester -- Nothing to renew
 2026-02-05 00:37:30 [1028] tester -- Nothing to renew: mycert1 26992 days, mycert2 31 days
-2026-02-05 00:37:31 [1029] tester -- ERROR: Authorization URL required
-2026-02-05 00:37:32 [1030] tester -- ERROR: Invalid order: 
-2026-02-05 00:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order
+2026-02-05 00:37:31 [1029] tester -- ERROR: Authorization URL required (log: certx-20260205-003731-PID.log)
+2026-02-05 00:37:32 [1030] tester -- ERROR: Invalid order:  (log: certx-20260205-003732-PID.log)
+2026-02-05 00:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order (log: certx-20260205-003733-PID.log)
 2026-02-05 00:37:35 [1033] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:35 [1033] tester -- Creating key '_key'
 2026-02-05 00:37:35 [1033] tester -- Registering account
@@ -81,14 +81,14 @@
 2026-02-05 00:37:47 [1045] tester -- Downloading certificate: badpath.crt
 2026-02-05 00:37:47 [1045] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
 2026-02-05 00:37:47 [1045] tester -- Deploying badpath.crt to relative/path.crt
-2026-02-05 00:37:47 [1045] tester -- ERROR: Deploy failed: relative/path.crt
+2026-02-05 00:37:47 [1045] tester -- ERROR: Deploy failed: relative/path.crt (log: certx-20260205-003747-PID.log)
 2026-02-05 00:37:48 [1046] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:48 [1046] tester -- Order ftpfail: example.com
 2026-02-05 00:37:48 [1046] tester -- Creating key 'ftpfail.key'
 2026-02-05 00:37:48 [1046] tester -- Downloading certificate: ftpfail.crt
 2026-02-05 00:37:48 [1046] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
 2026-02-05 00:37:48 [1046] tester -- Deploying ftpfail.crt to ftp://fail.acme/certs/ftpfail.crt
-2026-02-05 00:37:48 [1046] tester -- ERROR: Deploy failed: ftp://fail.acme/certs/ftpfail.crt
+2026-02-05 00:37:48 [1046] tester -- ERROR: Deploy failed: ftp://fail.acme/certs/ftpfail.crt (log: certx-20260205-003748-PID.log)
 2026-02-05 00:37:49 [1047] tester -- Renewing: renewcert
 2026-02-05 00:37:49 [1047] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:49 [1047] tester -- Order renewcert: example.com
@@ -103,13 +103,13 @@
 2026-02-05 00:37:51 [1049] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:51 [1049] tester -- Order invalidcert: example.com
 2026-02-05 00:37:51 [1049] tester -- Creating key 'invalidcert.key'
-2026-02-05 00:37:51 [1049] tester -- ERROR: Order failed: invalidcert
+2026-02-05 00:37:51 [1049] tester -- ERROR: Order failed: invalidcert (log: certx-20260205-003751-PID.log)
 2026-02-05 00:37:52 [1050] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
 2026-02-05 00:37:52 [1050] tester -- Order timeoutcert: dns.example.com
 2026-02-05 00:37:52 [1050] tester -- Authorization dns.example.com: https://mock.acme/authz/3
 2026-02-05 00:37:52 [1050] tester -- Running hook: cloudflare
 2026-02-05 00:37:52 [1050] tester -- Waiting for DNS propagation _acme-challenge.dns.example.com
-2026-02-05 00:37:52 [1050] tester -- ERROR: DNS propagation timeout _acme-challenge.dns.example.com
+2026-02-05 00:37:52 [1050] tester -- ERROR: DNS propagation timeout _acme-challenge.dns.example.com (log: certx-20260205-003752-PID.log)
 2026-02-05 00:37:52 [1050] tester -- Cleanup challenges
 2026-02-05 00:37:53 [1051] tester -- Deactivating authorization: https://mock.acme/authz/1
 2026-02-05 00:37:53 [1051] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
@@ -117,4 +117,4 @@
 valid
 2026-02-05 00:37:54 [1052] tester -- Deactivating authorization: https://mock.acme/nonexistent
 2026-02-05 00:37:54 [1052] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
-2026-02-05 00:37:54 [1052] tester -- ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"} 
+2026-02-05 00:37:54 [1052] tester -- ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"}  (log: certx-20260205-003754-PID.log)

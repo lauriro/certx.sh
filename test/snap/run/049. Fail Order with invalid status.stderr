@@ -2,4 +2,4 @@ CA: https://acme-staging-v02.api.letsencrypt.org/directory
 Order invalidcert: example.com
 Creating key 'invalidcert.key'
 
-ERROR: Order failed: invalidcert
+ERROR: Order failed: invalidcert (log: certx-20260205-003751-PID.log)

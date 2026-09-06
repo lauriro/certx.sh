@@ -65,6 +65,12 @@ Fail() {
 	shift
 	assert "$EXIT" "Fail $@"
 }
+# Assert a `test` expression; restore CMD, sh keeps assignments made on a function call
+Is() {
+	_CMD=$CMD CMD=test
+	assert 0 "Test $@"
+	CMD=$_CMD
+}
 
 assert() {
 	: $((SEQ+=1))

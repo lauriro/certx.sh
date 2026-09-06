@@ -90,7 +90,7 @@
 
 umask 077
 export LC_ALL=C UA='certx.sh/26.8.3' CERTX_CONF CERTX_LOG
-NOW=$(date +%s) ARI='' KID='' NONCE='' NL='
+NOW=$(date +%s) STAMP=$(date +%Y%m%d-%H%M%S)-$$ ARI='' KID='' LOG=certx-$STAMP.log NONCE='' NL='
 ' WHO=${SUDO_USER:-${USER:-${LOGNAME:-$(id -un 2>/dev/null ||:)}}}
 
 usage() {
@@ -98,11 +98,14 @@ usage() {
 }
 log() {
 	{ [ -t 2 ] || [ -n "$3$TEST_LOG" ]; } && printf '%s\n' "$3$1" >&2
-	printf '%s [%s] %s -- %s\n' "$(date +%Y-%m-%d\ %H:%M:%S)" "$CERTX_PID" "$WHO" "$1" >>"$CERTX_LOG"
+	LINE="$(date +%Y-%m-%d\ %H:%M:%S) [$CERTX_PID] $WHO -- $1"
+	printf '%s\n' "$LINE" >>"$CERTX_LOG"
+	printf '%s\n' "$LINE" >>_debug
 	[ -z "$2" ] || usage "$2"
 }
 die() {
-	log "ERROR: $1${3:+": $(tr -s '[:cntrl:] ' ' ' <"$3")"}" "$2" "$NL"
+	log "ERROR: $1${3:+": $(tr -s '[:cntrl:] ' ' ' <"$3")"} (log: $LOG)" "$2" "$NL"
+	mv _debug "$LOG"
 	exit 1
 }
 has() {
@@ -158,11 +161,13 @@ sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 	printf '{"protected":"%s","payload":"%s","signature":"%s"}' "$PROT" "$DATA" "$SIG"
 }
 req() {
+	printf '\n>>> %s\n%s\n' "$1" "$2" >>_debug
 	[ $# -gt 1 ] && {
 		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce' '' _res
 		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
 	}
-	RES=$(curl -si -A "$UA" --retry 10 --retry-connrefused "$@" | sed 's/[[:space:]]*$//')
+	RES=$(curl -sSi -A "$UA" --retry 10 --retry-connrefused "$@" 2>>_debug | sed 's/[[:space:]]*$//')
+	printf '<<<\n%s\n' "$RES" >>_debug
 	NONCE=$(printf %s "$RES" | sed -n 's/^[Rr]eplay-[Nn]once: *//p')
 	CODE="${RES#* }500" CODE=${CODE%%$NL*}
 	printf '%s\n' "$RES"
@@ -245,7 +250,7 @@ deploy_file() {
 			cat "$1" >"$P"
 			;;
 		*) false;;
-		esac || die "Deploy failed: $TARGET"
+		esac 2>>_debug || die "Deploy failed: $TARGET"
 		[ -z "$3" ] || printf '%s\n' "$CLEAN" >>_cleanup
 	done
 }
@@ -348,11 +353,10 @@ order() {
 	NAMES=$(IFS=,;for N in $1;do get_domain "$N" dns ip >/dev/null && printf '{"type":"%s","value":"%s"},' "$TYPE" "$N"; done)
 
 	[ -z "$BACKUP" ] && {
-		BACKUP="$FILE.order-$(date +%Y%m%d-%H%M%S)-$$"
 		ID=$(conf_has "cert $FILE ari_replace" && conf_get "cert $FILE ari") && ID=',"replaces":"'"$ID"'"'
 		conf_set "cert $FILE ari" '' '[^=]*'
 		req "$(json newOrder)" '{"identifiers":['"${NAMES%?}"']'"${2:+",\"profile\":\"$2\""}${ID}"'}' >_order || die "Creating order failed: $FILE" order _order
-		cp _order "$BACKUP"
+		cp _order "${BACKUP:=$FILE.order-$STAMP}"
 	}
 	ORDER_URL=$(sed -n 's/^[Ll]ocation: *//p' _order)
 	[ -n "$ORDER_URL" ] || die "No order location: $FILE"
@@ -434,7 +438,7 @@ has cp curl cut date head mv od openssl sed sort tail tr || die "Missing command
 # Touch config file if not writable
 [ -w "$CERTX_CONF" ] || :>"$CERTX_CONF" || die "Cannot create config: $CERTX_CONF"
 :>_cleanup
-trap 'cleanup; rm -f _dir _auth _challenge _crt _key _pub _order _cleanup _newkey _res; exit' EXIT INT TERM
+trap 'cleanup; rm -f _dir _auth _challenge _crt _key _pub _order _cleanup _newkey _res _debug; exit' EXIT INT TERM
 
 CA=$(conf_get _ca) || {
 	log 'No CA configured' ca

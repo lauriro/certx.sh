@@ -5,4 +5,4 @@ Downloading certificate: badpath.crt
 Expires: May  1 22:09:24 2026 GMT (85 days)
 Deploying badpath.crt to relative/path.crt
 
-ERROR: Deploy failed: relative/path.crt
+ERROR: Deploy failed: relative/path.crt (log: certx-20260205-003747-PID.log)

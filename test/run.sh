@@ -15,6 +15,8 @@ export CERTX_CONF="$TMP/certx.conf" CERTX_LOG="$TMP/certx.log" PATH="$ROOT/test/
 # Deterministic log PIDs: CERTX_PID tracks the per-test counter from assert.sh
 certx() { CERTX_PID=$SEQ $BASE "$@"; }
 
+# Debug filenames use the real process ID; retain the name and timestamp.
+FILTER='s/\(certx-[0-9]*-[0-9]*-\)[0-9][0-9]*\.log/\1PID.log/g'
 
 printf '%s\n' \
 	'_terms = YES' \
@@ -97,7 +99,7 @@ Fail 1 "authz-deactivate no URL" authz-deactivate
 Fail 1 "retry missing file" retry
 Fail 1 "retry invalid file" retry nonexistent.order
 
-Check "certx.log" ".config"
+Check "certx.log" ".config" "$FILTER"
 # --- Order test with mocked curl ---
 
 # Generate test cert for mock response (only if doesn't exist)
@@ -122,7 +124,7 @@ Test "Revoke cert" cert testcert revoke 0
 # Filter random keys from config (keys vary per run, dates are deterministic via mock date)
 FILTER_CONF='/^_key =/d;/^_jwk/d;/^_thumb/d;/cert .* key =/d'
 Check "certx.conf" ".order" "$FILTER_CONF"
-Check "certx.log" ".order"
+Check "certx.log" ".order" "$FILTER"
 # --- Test order with pending auth → challenge → valid ---
 export MOCK_TEST=pending
 
@@ -135,7 +137,7 @@ Test "Add cert for pending auth" cert pendingcert example.com
 Test "Order with pending auth" cert pendingcert order
 
 Check "certx.conf" ".pending" "$FILTER_CONF"
-Check "certx.log" ".pending"
+Check "certx.log" ".pending" "$FILTER"
 # --- Test order with DNS challenge (Cloudflare) ---
 export MOCK_TEST=dns
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized  # Clean mock state from previous tests
@@ -157,7 +159,7 @@ export MOCK_DNS_TXT='"'$EXPECTED_VAL'"'
 Test "Order with DNS challenge" cert dnscert order
 
 Check "certx.conf" ".dns" "$FILTER_CONF"
-Check "certx.log" ".dns"
+Check "certx.log" ".dns" "$FILTER"
 # --- Test order with DNS-PERSIST-01 challenge ---
 export MOCK_TEST=persist
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized
@@ -174,14 +176,14 @@ export MOCK_DNS_PERSIST_TXT='"mock.acme;accounturi=https://mock.acme/acct/1"'
 echo y | Test "Order with persist challenge" cert persistcert order
 
 Check "certx.conf" ".persist" "$FILTER_CONF"
-Check "certx.log" ".persist"
+Check "certx.log" ".persist" "$FILTER"
 
 # Second order should reuse stored record (no prompt)
 rm -f "$MOCK_STATE"/auth-challenged "$MOCK_STATE"/finalized
 
 Test "Order with stored persist record" cert persistcert order
 
-Check "certx.log" ".persist-reuse"
+Check "certx.log" ".persist-reuse" "$FILTER"
 # --- Test account rollover ---
 export MOCK_TEST=""
 
@@ -189,7 +191,7 @@ Test "Account rollover" account-rollover
 
 # Verify key was updated but _kid stayed the same
 Check "certx.conf" ".rollover" "$FILTER_CONF"
-Check "certx.log" ".rollover"
+Check "certx.log" ".rollover" "$FILTER"
 
 # --- Test renew-all with unreachable ARI endpoint (mock returns 404) ---
 # Certs with stored ari must fall back to days/% renewal, not be skipped as "0 days"
@@ -258,7 +260,7 @@ Test "Deactivate authorization" authz-deactivate https://mock.acme/authz/1
 # A failed request must report the CA response, on stderr and in the log
 Fail 1 "Deactivate unknown authorization" authz-deactivate https://mock.acme/nonexistent
 
-Check "certx.log" ".hooks"
+Check "certx.log" ".hooks" "$FILTER"
 # --- Test account deactivation ---
 Test "Account deactivate" account-deactivate
 
@@ -293,7 +295,7 @@ Fail 1 "Check unreachable server" cert testcert check
 Fail 1 "Renew-all with failing check" renew-all 30
 
 
-Check "certx.log" ".end"
+Check "certx.log" ".end" "$FILTER"
 
 # --- Account commands and CAA binding (RFC 8657) ---
 Test "Help account" help account
@@ -320,3 +322,19 @@ touch "$MOCK_STATE/retry-zero-polled"
 $CMD cert processingcert example.com 2>/dev/null
 Test "Wait for processing finalize response" cert processingcert order
 Check "finalize-processing-requests" ""
+
+Is "Remove debug log after success" ! -e _debug
+
+# Isolate preserved logs from the failures exercised earlier in this suite.
+mkdir "$TMP/debug-test"
+cd "$TMP/debug-test"
+Fail 1 "Preserve debug log on failure" authz-deactivate https://mock.acme/nonexistent
+DEBUG=$(sed -n 's/^ERROR:.* (log: \(.*\))$/\1/p' "$TMP/$NAME.stderr")
+Is "Error names the preserved debug log" -s "$DEBUG"
+Is "Remove temporary debug log after failure" ! -e _debug
+cp "$DEBUG" "$TMP/saved-debug"
+Check "saved-debug" "" "$FILTER"
+
+# Failed orders and their debug logs share the startup timestamp and PID.
+set -- "$TMP"/invalidcert.order-*
+Is "Preserve certificate order debug log" -s "$TMP/certx-${1##*.order-}.log"

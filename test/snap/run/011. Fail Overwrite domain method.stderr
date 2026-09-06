@@ -1,5 +1,5 @@
 
-ERROR: No executable DNS validation hook!
+ERROR: No executable DNS validation hook! (log: certx-20260205-003713-PID.log)
 
 Automated DNS validation requires executable script: ./dns-PROVIDER.sh
 Script adds TXT record and outputs cleanup commands to stdout.

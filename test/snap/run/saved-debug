@@ -1,0 +1,18 @@
+2026-02-05 00:38:09 [1067] tester -- Deactivating authorization: https://mock.acme/nonexistent
+
+>>> https://mock.acme/directory
+
+<<<
+HTTP/1.1 200 OK
+replay-nonce: mock-nonce-001
+
+{"newNonce":"https://mock.acme/new-nonce","newAccount":"https://mock.acme/new-acct","newOrder":"https://mock.acme/new-order","revokeCert":"https://mock.acme/revoke-cert","keyChange":"https://mock.acme/key-change","meta":{"caaIdentities":["mock.acme"]},"renewalInfo":"https://mock.acme/renewal-info","termsOfService":"https://mock.acme/terms"}
+2026-02-05 00:38:09 [1067] tester -- CA: https://mock.acme/directory
+
+>>> https://mock.acme/nonexistent
+{"status":"deactivated"}
+<<<
+HTTP/2 404
+
+{"error":"not found"}
+2026-02-05 00:38:09 [1067] tester -- ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"}  (log: certx-20260205-003809-PID.log)
