@@ -1,12 +1,11 @@
 #!/bin/sh
 # Run './test/run.sh up' to generate snapshots
 
-ROOT=$(cd "$(dirname "$0")/.." && pwd) TMP=/tmp/certx-test
+ROOT=$(cd "$(dirname "$0")/.." && pwd) || exit 1
+TMP=/tmp/certx-test
 BASE=${CMD:-$ROOT/certx.sh}   # test/coverage.sh overrides CMD with a kcov wrapper
 CMD=certx
 . "$ROOT/test/assert.sh"
-
-
 
 
 # Used by certx.sh and the mocks as subprocesses

@@ -34,3 +34,13 @@ jobs:
         rm /tmp/bb/diff
         export PATH="/tmp/bb:$PATH"
         ./test/json.sh && ./test/run.sh
+
+  E2E:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - run: ./test/e2e.sh
+    - run: ./test/e2e.sh
+    - run: ./test/e2e.sh
+    - run: ./test/e2e.sh
+    - run: ./test/e2e.sh
