@@ -1,7 +1,7 @@
 
 ERROR: Invalid command! (log: certx-20260205-003704-PID.log)
 
-certx.sh - v26.8.3 - Simple ACME client for green certificates.
+certx.sh - v26.9.0 - Simple ACME client for green certificates.
                      https://github.com/lauriro/certx.sh | https://certx.sh/MIT-LICENSE.txt
 
 Commands:
