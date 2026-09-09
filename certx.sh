@@ -368,7 +368,7 @@ order() {
 	[ -n "$ORDER_URL" ] || die "No order location: $FILE"
 	for AUTH in $(json authorizations _order); do
 		req "$AUTH" '' >_auth || die "Order auth failed: $FILE" '' _auth
-		[ "$(json status _auth '"challenges"')" = 'pending' ] && challenge "$AUTH"
+		[ "$(json status _auth | head -1)" = 'pending' ] && challenge "$AUTH"
 	done
 
 	expand_key "cert $FILE key" "$FILE.key"
