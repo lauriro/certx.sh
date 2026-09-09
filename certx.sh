@@ -371,11 +371,14 @@ order() {
 	done
 
 	expand_key "cert $FILE key" "$FILE.key"
+	END=$(($(date +%s)+${ORDER_TIMEOUT:-300}))
 	req "$ORDER_URL" '' >_order && while :; do
 		case "$(json status _order)" in
 		pending|processing)
 			SLEEP=$(seconds_to "$(sed -n 's/^[Rr]etry-[Aa]fter: *//p' _order)") ||:
-			sleep "$((SLEEP>120?120:SLEEP>0?SLEEP:2))"
+			SLEEP=$((SLEEP>120?120:SLEEP>0?SLEEP:2))
+			[ "$(date +%s)" -lt "$END" ] || die "Order timeout: $FILE"
+			sleep "$SLEEP"
 			req "$ORDER_URL" '' >_order || break
 			;;
 		ready)

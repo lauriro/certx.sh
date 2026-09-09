@@ -40,7 +40,6 @@ echo "Test '$CMD' in '$TMP'"
 Check() {
 	set -- "$SNAP/$1${2-".$NAME"}" "$TMP/$1" "$3"
 	A=$1
-	B=$2
 	[ -n "$3" ] && {
 		sed "$3" "$1" > "$TMP/_diff1" 2>/dev/null
 		sed "$3" "$2" > "$TMP/_diff2"
@@ -50,7 +49,7 @@ Check() {
 	diff -uN $COLOR "$1" "$2" &&: $((PASS+=1)) || {
 		LINE=$ERR
 		OUT="PASS:%s ${red}${bold}FAIL:%s${reset}"
-		[ "$SUB" = "up" ] && mkdir -p "$(dirname "$A")" && cp "$B" "$A" &&: $((SYNC+=1)) ||: $((FAIL+=1))
+		[ "$SUB" = "up" ] && mkdir -p "$(dirname "$A")" && cp "$2" "$A" &&: $((SYNC+=1)) ||: $((FAIL+=1))
 	}
 }
 

@@ -188,6 +188,7 @@ Failed orders leave a order file, that can retried
 ```bash
 CERTX_CONF=/etc/certx-staging.conf ./certx.sh cert mycert order
 CERTX_LOG=/var/log/certx.log ./certx.sh renew-all
+ORDER_TIMEOUT=1200 ./certx.sh cert mycert order   # seconds to wait for an order to be issued (default 600)
 ```
 
 ## Commands
