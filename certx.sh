@@ -162,14 +162,15 @@ sign() { # [URL] [PAYLOAD] [JWK] [KEY]
 }
 req() {
 	printf '\n>>> %s\n%s\n' "$1" "$2" >>_debug
-	[ $# -gt 1 ] && {
-		[ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce' '' _res
-		set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
-	}
-	RES=$(curl -sSi -A "$UA" --retry 10 --retry-connrefused "$@" 2>>_debug | sed 's/[[:space:]]*$//')
+	[ $# -lt 2 ] || [ -n "$NONCE" ] || req "$(json newNonce)" >_res || die 'Cannot get Nonce' '' _res
+	RES=$(
+		[ $# -lt 2 ] || set -- -H 'Content-Type: application/jose+json' -d "$(sign "$1" "$2" "$3" "$4" ',"nonce":"'"$NONCE"'"')" "$1"
+		curl -sSi -A "$UA" --retry 10 --retry-connrefused "$@" 2>>_debug | sed 's/[[:space:]]*$//'
+	)
 	printf '<<<\n%s\n' "$RES" >>_debug
 	NONCE=$(printf %s "$RES" | sed -n 's/^[Rr]eplay-[Nn]once: *//p')
-	CODE="${RES#* }500" CODE=${CODE%%$NL*}
+	[ "$RES" != "${RES#*error:badNonce}" ] && [ $((TRY+=1)) -le 5 ] && { req "$@"; return; }
+	CODE="${RES#* }500" CODE=${CODE%%$NL*} TRY=0
 	printf '%s\n' "$RES"
 	[ "${CODE%% *}" -lt 300 ]
 }
