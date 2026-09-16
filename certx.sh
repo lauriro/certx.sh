@@ -170,7 +170,7 @@ req() {
 	printf '<<<\n%s\n' "$RES" >>_debug
 	NONCE=$(printf %s "$RES" | sed -n 's/^[Rr]eplay-[Nn]once: *//p')
 	[ "$RES" != "${RES#*error:badNonce}" ] && [ $((TRY+=1)) -le 5 ] && { req "$@"; return; }
-	CODE="${RES#* }500" CODE=${CODE%%$NL*} TRY=0
+	CODE="${RES#* }500" CODE=${CODE%%"$NL"*} TRY=0
 	printf '%s\n' "$RES"
 	[ "${CODE%% *}" -lt 300 ]
 }
@@ -311,7 +311,7 @@ challenge() {
 		RR="_validation-persist.$NAME"
 		VAL=$(conf_get "domain $DOMAIN persist") || {
 			VAL=$(json issuer-domain-names _auth '"type":"dns-persist-01"') || die 'CA do not support dns-persist'
-			VAL="${VAL%%$NL*};accounturi=$(conf_get _kid)${2:+";policy=wildcard"}${3:+";persistUntil=$3"}"
+			VAL="${VAL%%"$NL"*};accounturi=$(conf_get _kid)${2:+";policy=wildcard"}${3:+";persistUntil=$3"}"
 			printf 'Add DNS record: %s TXT="%s"\nDone? ' "$RR" "$VAL"
 			read -r _
 			conf_set "domain $DOMAIN persist" "$VAL"
@@ -501,7 +501,7 @@ cert.|domain.|ip.)
 account.)
 	get_kid
 	ACCT=$(conf_get _kid)
-	CAA=$(json caaIdentities) && CAA=${CAA%%$NL*} || CAA='CA-DOMAIN'
+	CAA=$(json caaIdentities) && CAA=${CAA%%"$NL"*} || CAA='CA-DOMAIN'
 	printf 'Account URI: %s\n\nCAA records to bind issuance to this account:\n' "$ACCT"
 	(IFS=$NL;for D in $(conf_find domain ''); do
 		M=${D#*= }
