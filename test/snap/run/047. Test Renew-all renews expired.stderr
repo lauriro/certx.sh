@@ -1,5 +1,5 @@
 Renewing: renewcert
-CA: https://acme-staging-v02.api.letsencrypt.org/directory
+CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 Order renewcert: example.com
 Creating key 'renewcert.key'
 Downloading certificate: renewcert.crt

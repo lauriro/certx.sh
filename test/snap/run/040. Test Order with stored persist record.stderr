@@ -1,4 +1,4 @@
-CA: https://acme-staging-v02.api.letsencrypt.org/directory
+CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 Order persistcert: persist.example.com
 Authorization persist.example.com: https://mock.acme/authz/4
 Waiting for DNS propagation _validation-persist.persist.example.com

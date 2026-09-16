@@ -190,7 +190,7 @@ jwk() {
 get_dir() {
 	[ -z "$DIR" ] || return 0
 	req "$CA" >_dir || die "Cannot get CA: $CA" '' _dir
-	log "CA: $CA"
+	log "CA: $CA ($UA)"
 	ARI=$(json renewalInfo ||:)
 	DIR=1
 }

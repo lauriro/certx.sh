@@ -9,7 +9,7 @@
 2026-02-05 00:37:31 [1029] tester -- ERROR: Authorization URL required (log: certx-20260205-003731-PID.log)
 2026-02-05 00:37:32 [1030] tester -- ERROR: Invalid order:  (log: certx-20260205-003732-PID.log)
 2026-02-05 00:37:33 [1031] tester -- ERROR: Invalid order: nonexistent.order (log: certx-20260205-003733-PID.log)
-2026-02-05 00:37:35 [1033] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 00:37:35 [1033] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 2026-02-05 00:37:35 [1033] tester -- Creating key '_key'
 2026-02-05 00:37:35 [1033] tester -- Registering account
 2026-02-05 00:37:35 [1033] tester -- Order testcert: example.com
@@ -18,9 +18,9 @@
 2026-02-05 00:37:35 [1033] tester -- Downloading certificate: testcert.crt
 2026-02-05 00:37:35 [1033] tester -- Expires: May  1 22:09:24 2026 GMT (85 days)
 2026-02-05 00:37:36 [1034] tester -- Revoking certificate testcert
-2026-02-05 00:37:36 [1034] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 00:37:36 [1034] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 2026-02-05 00:37:36 [1034] tester -- Revoke DONE
-2026-02-05 00:37:38 [1036] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory
+2026-02-05 00:37:38 [1036] tester -- CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 2026-02-05 00:37:38 [1036] tester -- Order pendingcert: example.com
 2026-02-05 00:37:38 [1036] tester -- Authorization example.com: https://mock.acme/authz/2
 2026-02-05 00:37:38 [1036] tester -- Deploying _challenge to /tmp/certx-test/webroot/.well-known/acme-challenge/mock-token-123

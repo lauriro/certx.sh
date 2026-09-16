@@ -1,4 +1,4 @@
-CA: https://mock.acme/directory
+CA: https://mock.acme/directory (certx.sh/26.9.0)
 Order processingcert: example.com
 Creating key 'processingcert.key'
 Sending CSR

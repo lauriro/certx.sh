@@ -1,4 +1,4 @@
 Deactivating authorization: https://mock.acme/nonexistent
-CA: https://mock.acme/directory
+CA: https://mock.acme/directory (certx.sh/26.9.0)
 
 ERROR: Authorization deactivation failed: HTTP/2 404 {"error":"not found"}  (log: certx-20260205-003809-PID.log)

@@ -1,4 +1,4 @@
-CA: https://acme-staging-v02.api.letsencrypt.org/directory
+CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 Order pendingcert: example.com
 Authorization example.com: https://mock.acme/authz/2
 Deploying _challenge to /tmp/certx-test/webroot/.well-known/acme-challenge/mock-token-123

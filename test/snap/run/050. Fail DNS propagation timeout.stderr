@@ -1,4 +1,4 @@
-CA: https://acme-staging-v02.api.letsencrypt.org/directory
+CA: https://acme-staging-v02.api.letsencrypt.org/directory (certx.sh/26.9.0)
 Order timeoutcert: dns.example.com
 Authorization dns.example.com: https://mock.acme/authz/3
 Running hook: cloudflare
