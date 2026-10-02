@@ -361,6 +361,14 @@ export MOCK_TEST=ari-due
 Fail 1 "ARI renewal requires an account" renew-all
 Check "ari-requests" ""
 
+# A stored ARI start already reached must renew without a new ARI request.
+MOCK_REQUESTS="$TMP/ari-stored-requests"
+cp "$TMP/ari-original" "$CERTX_CONF"
+printf 'cert ari1 ari_start = 2026-02-04T00:00:00Z\n' >> "$CERTX_CONF"
+:> "$MOCK_REQUESTS"
+Fail 1 "Stored ARI start reached" renew-all
+Check "ari-stored-requests" ""
+
 # Cache a directory without renewalInfo too, instead of fetching it per cert.
 sed 's/Jan 01 00:00:00 2020 GMT/Feb 20 00:00:00 2026 GMT/' "$TMP/ari-original" > "$CERTX_CONF"
 export MOCK_TEST=ari-unsupported MOCK_REQUESTS="$TMP/ari-unsupported-requests"
