@@ -13,7 +13,7 @@ Commands:
   ip [addr] drop                                 - remove IP configuration
   cert                                           - list created certificates
   cert [name] [domain,..] [profile]              - configure cert domains and optional CA profile (eg. shortlived)
-  cert [name] [key_path|crt_path] [paths,..]
+  cert [name] [key_path|crt_path] [paths,..]     - deploy key and cert after order (local path/ssh/ftp/ftps)
   cert [name] post_hook [cmd]                    - commands to run after cert deployment
   cert [name] chain [N]                          - set alternate cert positional index (1-..)
   cert [name] check_host [host:port] [proto]     - live server endpoint to validate
@@ -35,5 +35,8 @@ Examples:
   ./certx.sh domain example.com dns-persist wildcard
   ./certx.sh cert mycert 'example.com,*.example.com'
   ./certx.sh cert mycert 'example.com,203.0.113.1' shortlived
+  ./certx.sh cert mycert key_path /ssl/mycert.key,ssh://user@host/ssl/mycert.crt
+  ./certx.sh cert mycert crt_path ftps://user:pass@host/ssl/mycert.crt
+  ./certx.sh cert mycert post_hook 'ssh user@host systemctl reload nginx'
   ./certx.sh cert mycert order
 
